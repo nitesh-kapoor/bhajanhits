@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#853c29">
+<meta name="description" content="Bhakti Bhajan Sangrah: devotional lyrics in Hindi and Romanized Hindi, with a peaceful singing view for your satsang.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Bhakti Bhajan Sangrah</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+<script defer src="data.js"></script><script defer src="app.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><button id="openMenu" aria-label="Open library and filters" aria-controls="libraryDrawer" aria-expanded="false">☰</button><a class="brand" href="#home"><span class="brand-mark" aria-hidden="true">ॐ</span><span>Bhakti Bhajan Sangrah<small>Bhajans, Aarti, Chalisa &amp; Mantras</small></span></a></header>
+<main id="main">
+<div id="browse">
+<section class="search-bar" aria-label="Find a bhajan"><label class="sr-only" for="search">Search bhajans, aarti, deity</label><div class="search-wrap"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search title, deity or song #…" autocomplete="off"></div></section>
+<p id="activeFilters" class="active-filters" hidden></p>
+<section id="collection"><div class="section-heading"><h2 id="collectionTitle">The Collection</h2><button id="reset" class="text-button" hidden>Clear filters</button></div><p id="resultCount" class="muted" role="status"></p><ol id="cards" class="cards" aria-label="Numbered bhajan collection"></ol></section>
+<footer><div class="creator-credit"><span class="creator-label">Created with devotion by</span><strong>Nitesh Kapoor</strong><span class="creator-note">A collection to bring us together in prayer.</span></div><small>Hindi &amp; Romanized Hindi • For our community</small></footer>
+</div>
+<article id="reader" hidden aria-labelledby="readerTitle">
+<div class="reader-top"><button id="back">← Back</button><button id="singing" aria-pressed="false">Singing Mode</button></div>
+<header class="reader-heading"><p id="readerMeta" class="eyebrow"></p><h1 id="readerTitle" tabindex="-1"></h1><p id="readerHindi" lang="hi"></p></header>
+<div class="reader-controls"><div class="language-toggle" role="group" aria-label="Lyrics language"><button data-lang="hindi" lang="hi">हिंदी</button><button data-lang="roman">English</button></div><div class="font-controls" role="group" aria-label="Lyrics font size"><button id="smaller" aria-label="Decrease lyrics font size">A−</button><button id="larger" aria-label="Increase lyrics font size">A+</button></div></div>
+<p id="languageNote" class="muted"></p>
+<div class="reader-actions"><button id="readerFavorite">♡ Favorite</button><button id="share">Share ↗</button></div>
+<p id="wakeStatus" class="muted" role="status" hidden></p>
+<div id="lyricsText" class="lyrics-text"></div>
+<details class="source-details"><summary>About this bhajan</summary><p id="description"></p><p id="source"></p></details>
+<nav class="reader-pagination" aria-label="Bhajan navigation"><button id="previous">← Previous Bhajan</button><button id="next">Next Bhajan →</button></nav>
+</article>
+</main>
+<dialog id="libraryDrawer" aria-labelledby="drawerTitle"><div class="drawer-heading"><h2 id="drawerTitle">Library &amp; filters</h2><button id="closeMenu" aria-label="Close library and filters">✕</button></div><nav class="library-nav" aria-label="Your library"><button data-view="favorites" aria-pressed="false">♡ Favorites <span id="favoriteCount">0</span></button><button data-view="recent" aria-pressed="false">Recently Viewed</button></nav>
+<details id="typeFilters"><summary>Type</summary><div class="filters" role="group" aria-label="Browse by type"></div></details>
+<section id="categories" aria-label="Deity"><h2>Browse by Deity</h2><div id="categoryGrid" class="categories"></div></section><div class="drawer-creator"><span>Created with devotion by</span><strong>Nitesh Kapoor</strong></div><div class="drawer-footer"><button id="drawerReset">Reset filters</button><button id="showResults">Show items</button></div></dialog>
+<div id="notice" class="notice" role="status" hidden></div>
+<dialog id="shareDialog"><h2>Share this bhajan</h2><label for="shareLink">Copy this link</label><input id="shareLink" readonly><button id="closeShare">Done</button></dialog>
+<noscript><p>Please enable JavaScript to browse the devotional collection.</p></noscript>
+</body></html>
