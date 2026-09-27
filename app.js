@@ -126,7 +126,213 @@ function closeMenu(){drawer.close();}
 $('#closeMenu').onclick=closeMenu;$('#showResults').onclick=closeMenu;
 $('#drawerReset').onclick=clearFilters;
 drawer.addEventListener('close',()=>{$('#openMenu').setAttribute('aria-expanded','false');$('#openMenu').focus();});
-drawer.addEventListener('click',e=>{if(e.target===drawer){const r=drawer.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeMenu();}});
+// Bhajan Submission Dialog Controller
+const submitDialog = $('#submitDialog');
+let submitMode = 'photo';
+let uploadedImageData = null;
+let uploadedImageMime = 'image/jpeg';
+let latestSubmittedItem = null;
+
+function resetSubmitForm() {
+  submitMode = 'photo';
+  uploadedImageData = null;
+  $('#tabPhoto')?.classList.add('active');
+  $('#tabPhoto')?.setAttribute('aria-selected', 'true');
+  $('#tabText')?.classList.remove('active');
+  $('#tabText')?.setAttribute('aria-selected', 'false');
+  $('#photoPanel').hidden = false;
+  $('#textPanel').hidden = true;
+  $('#photoFile').value = '';
+  $('#photoPreview').src = '';
+  $('#previewWrap').hidden = true;
+  $('#fileDropzone').hidden = false;
+  $('#lyricsText').value = '';
+  $('#youtubeUrl').value = '';
+  $('#contributorName').value = '';
+  $('#contributorLocation').value = '';
+  $('#submitStatus').hidden = true;
+  $('#submitNotice').hidden = true;
+  $('#submitForm').hidden = false;
+  $('#submitSuccess').hidden = true;
+  $('#submitActionBtn').disabled = false;
+}
+
+function openSubmitModal() {
+  if (drawer.open) closeMenu();
+  resetSubmitForm();
+  submitDialog.showModal();
+}
+
+$('#openSubmit')?.addEventListener('click', openSubmitModal);
+$('#quickSubmit')?.addEventListener('click', openSubmitModal);
+$('#closeSubmit')?.addEventListener('click', () => submitDialog.close());
+
+submitDialog?.addEventListener('click', e => {
+  if (e.target === submitDialog) {
+    const r = submitDialog.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) {
+      submitDialog.close();
+    }
+  }
+});
+
+$('#tabPhoto')?.addEventListener('click', () => {
+  submitMode = 'photo';
+  $('#tabPhoto').classList.add('active');
+  $('#tabPhoto').setAttribute('aria-selected', 'true');
+  $('#tabText').classList.remove('active');
+  $('#tabText').setAttribute('aria-selected', 'false');
+  $('#photoPanel').hidden = false;
+  $('#textPanel').hidden = true;
+  $('#submitNotice').hidden = true;
+});
+
+$('#tabText')?.addEventListener('click', () => {
+  submitMode = 'text';
+  $('#tabText').classList.add('active');
+  $('#tabText').setAttribute('aria-selected', 'true');
+  $('#tabPhoto').classList.remove('active');
+  $('#tabPhoto').setAttribute('aria-selected', 'false');
+  $('#photoPanel').hidden = true;
+  $('#textPanel').hidden = false;
+  $('#submitNotice').hidden = true;
+});
+
+$('#photoFile')?.addEventListener('change', e => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    showSubmitNotice('Please select an image file (JPG, PNG, WebP).');
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    showSubmitNotice('Image size is too large (max 10MB). Please choose a smaller photo.');
+    return;
+  }
+  uploadedImageMime = file.type;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    uploadedImageData = ev.target.result;
+    $('#photoPreview').src = uploadedImageData;
+    $('#previewWrap').hidden = false;
+    $('#fileDropzone').hidden = true;
+    $('#submitNotice').hidden = true;
+  };
+  reader.readAsDataURL(file);
+});
+
+$('#removePhoto')?.addEventListener('click', () => {
+  uploadedImageData = null;
+  $('#photoFile').value = '';
+  $('#photoPreview').src = '';
+  $('#previewWrap').hidden = true;
+  $('#fileDropzone').hidden = false;
+});
+
+function showSubmitNotice(msg) {
+  const n = $('#submitNotice');
+  n.textContent = msg;
+  n.hidden = false;
+}
+
+$('#submitActionBtn')?.addEventListener('click', async () => {
+  $('#submitNotice').hidden = true;
+  const lyricsText = $('#lyricsText').value.trim();
+
+  if (submitMode === 'photo' && !uploadedImageData) {
+    showSubmitNotice('Please tap above to choose a photo or screenshot of the lyrics.');
+    return;
+  }
+  if (submitMode === 'text' && lyricsText.length < 15) {
+    showSubmitNotice('Please enter at least a few lines of the bhajan lyrics.');
+    return;
+  }
+
+  const payload = {
+    mode: submitMode,
+    imageData: submitMode === 'photo' ? uploadedImageData : null,
+    imageMime: uploadedImageMime,
+    lyricsText: submitMode === 'text' ? lyricsText : null,
+    youtubeUrl: $('#youtubeUrl').value.trim(),
+    contributorName: $('#contributorName').value.trim(),
+    contributorLocation: $('#contributorLocation').value.trim()
+  };
+
+  const btn = $('#submitActionBtn');
+  btn.disabled = true;
+  const statusBox = $('#submitStatus');
+  const statusText = $('#submitStatusText');
+  statusBox.hidden = false;
+
+  let step = 0;
+  const steps = [
+    '🌸 Reading and verifying lyrics with AI...',
+    '✨ Formatting Hindi and English pronunciation...',
+    '📖 Adding to Bhakti Bhajan Sangrah...'
+  ];
+  statusText.textContent = steps[0];
+  const stepTimer = setInterval(() => {
+    step = (step + 1) % steps.length;
+    statusText.textContent = steps[step];
+  }, 3000);
+
+  try {
+    const res = await fetch('/api/submit-bhajan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    clearInterval(stepTimer);
+    statusBox.hidden = true;
+    btn.disabled = false;
+
+    const data = await res.json().catch(() => ({}));
+
+    if (data.status === 'rejected') {
+      showSubmitNotice('⚠️ ' + (data.reason || 'This upload could not be verified as a devotional hymn.'));
+      return;
+    }
+
+    if (data.status === 'success' || data.status === 'preview_only') {
+      latestSubmittedItem = data.item;
+      $('#submitForm').hidden = true;
+      $('#submitSuccess').hidden = false;
+      const cardWrap = $('#successCardWrap');
+      cardWrap.innerHTML = `
+        <div class="card" style="border: 1px solid var(--accent);">
+          <div class="card-main">
+            <span class="meta">${esc(data.item.god)} · ${esc(data.item.type)}</span>
+            <h3>${esc(data.item.titleEn)}</h3>
+            <span class="hindi-title" lang="hi">${esc(data.item.titleHi)}</span>
+          </div>
+        </div>
+        ${data.message ? `<p class="muted" style="margin-top:8px;font-size:12px;">ℹ️ ${esc(data.message)}</p>` : ''}
+      `;
+      return;
+    }
+
+    showSubmitNotice('⚠️ ' + (data.error || 'Submission could not be completed. Please try again later.'));
+  } catch (err) {
+    clearInterval(stepTimer);
+    statusBox.hidden = true;
+    btn.disabled = false;
+    showSubmitNotice('⚠️ Network error connecting to the submission service. Please check your connection.');
+  }
+});
+
+$('#successAnotherBtn')?.addEventListener('click', resetSubmitForm);
+$('#successOpenBtn')?.addEventListener('click', () => {
+  submitDialog.close();
+  if (latestSubmittedItem) {
+    const existing = items.find(x => x.titleEn.toLowerCase() === latestSubmittedItem.titleEn?.toLowerCase());
+    if (existing) {
+      openItem(existing.id);
+    } else {
+      location.reload();
+    }
+  }
+});
+
 render();route();
 if('serviceWorker' in navigator && /https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 

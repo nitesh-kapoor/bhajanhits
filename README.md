@@ -48,3 +48,15 @@ Added ID 165 Shri Ram Ki Gali Mein Tum Jaana. Both supplied scripts preserved. T
 
 ## Compact library UI
 Mobile home starts with search and numbered songs. The left menu contains library views, deity and type filters. Stable song numbers are shared across all views and the reader; search accepts numbers such as #24. Verified mobile layout, number search, reader numbering, deity/type filters, Recently Viewed numbering and Escape focus restoration.
+
+## Community submission and AI pipeline — September 27, 2026 (v1.19.0)
+Added end-to-end devotional crowdsourcing pipeline:
+- Mobile-friendly submission modal allowing photo/screenshot upload (camera/file picker) or direct text pasting.
+- Optional YouTube link input for rhythm, tune, and tempo reference.
+- Optional contributor name and city/country attribution.
+- Cloudflare Pages Function (`/api/submit-bhajan`) running Google Gemini AI:
+  - Strict guardrails: rejects vulgarity, sexually explicit content, abuse, and non-devotional material.
+  - Automatically structures Devanagari Hindi lyrics and Romanized singing pronunciation.
+  - Classifies Deity and Type according to site taxonomy.
+  - Automatically fetches `data.js`, assigns the next unique ID (166+), appends the song, bumps `sw.js` cache, and commits directly to GitHub repository.
+- Upgraded offline service worker cache to `bbs-static-v19`.
