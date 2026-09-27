@@ -223,7 +223,33 @@ Respond ONLY with valid raw JSON. Do not include markdown code block formatting 
 
     const updatedDataJs = dataJsContent.slice(0, lastBracketIdx).trimEnd() + entryString + '\n];\n';
 
-    // Commit updated data.js to GitHub
+    // 5a. Backup current data.js before overwriting
+    //     Path: backups/data_MMDDYY_HHMMSSms.js  (e.g. backups/data_092726_150601123.js)
+    try {
+      const now = new Date();
+      const pad = (n, w = 2) => String(n).padStart(w, '0');
+      const tsLabel =
+        pad(now.getUTCMonth() + 1) + pad(now.getUTCDate()) +
+        String(now.getUTCFullYear()).slice(-2) + '_' +
+        pad(now.getUTCHours()) + pad(now.getUTCMinutes()) +
+        pad(now.getUTCSeconds()) + pad(now.getUTCMilliseconds(), 3);
+      const backupPath = `backups/data_${tsLabel}.js`;
+
+      await fetch(`https://api.github.com/repos/${githubRepo}/contents/${backupPath}`, {
+        method: 'PUT',
+        headers: ghHeaders,
+        body: JSON.stringify({
+          message: `Backup data.js before adding ID ${nextId} (${parsedResult.titleEn})`,
+          // GitHub returns base64 with \n line-wrapping — strip it before re-POSTing
+          content: dataJsMeta.content.replace(/\n/g, '')
+        })
+      });
+    } catch (backupErr) {
+      // Backup is best-effort — log but do not abort the submission
+      console.error('Backup step failed (non-fatal):', backupErr);
+    }
+
+    // 5b. Commit updated data.js to GitHub
     const putDataRes = await fetch(`https://api.github.com/repos/${githubRepo}/contents/data.js`, {
       method: 'PUT',
       headers: ghHeaders,
