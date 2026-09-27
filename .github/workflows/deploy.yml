@@ -1,0 +1,70 @@
+name: CI/CD Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - uat
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
+jobs:
+  validate-and-deploy:
+    name: Build & Deploy to Cloudflare Pages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Static Code Analysis & Syntax Validation
+        run: |
+          echo "Running syntax validation..."
+          node --check app.js
+          node --check sw.js
+          node --input-type=module -e "import('./functions/api/submit-bhajan.js')"
+          echo "All syntax and module checks passed."
+
+      - name: Determine Target Environment & Branch Flag
+        id: env-config
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ] && [ "${{ github.event_name }}" = "push" ]; then
+            echo "is_production=true" >> $GITHUB_OUTPUT
+            echo "branch_name=main" >> $GITHUB_OUTPUT
+            echo "env_name=Production" >> $GITHUB_OUTPUT
+          else
+            echo "is_production=false" >> $GITHUB_OUTPUT
+            echo "branch_name=${{ github.head_ref || github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "env_name=UAT / Preview" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy to Cloudflare Pages
+        id: cloudflare-deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >
+            pages deploy . 
+            --project-name=bhakti-bhajan-sangrah 
+            --branch=${{ steps.env-config.outputs.branch_name }} 
+            --commit-dirty=true
+
+      - name: Output Deployment Summary
+        run: |
+          echo "=========================================="
+          echo "Deployment Target : ${{ steps.env-config.outputs.env_name }}"
+          echo "Branch Tagged     : ${{ steps.env-config.outputs.branch_name }}"
+          echo "Project           : bhakti-bhajan-sangrah"
+          echo "=========================================="
