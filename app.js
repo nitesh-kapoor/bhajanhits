@@ -89,11 +89,14 @@ function showItem(x){
  $('#browse').hidden=true;$('#reader').hidden=false;document.body.classList.add('reading');
  $('#readerMeta').textContent='Song #'+songNumber(x)+' · '+x.god+' · '+x.type;$('#readerTitle').textContent=x.titleEn;$('#readerHindi').textContent=x.titleHi||'';
  $('#description').textContent=x.desc||'';$('#source').textContent=x.source||'';
+ const yt=youtubeUrl(x.youtubeUrl);$('#youtubeLink').hidden=!yt;if(yt)$('#youtubeLink').href=yt;else $('#youtubeLink').removeAttribute('href');
  document.title=x.titleEn+' | Bhakti Bhajan Sangrah';renderLyrics();renderFavorite();
  if(!sequence.includes(x.id))sequence=items.map(x=>x.id);
  const position=sequence.indexOf(x.id);$('#previous').disabled=position<=0;$('#next').disabled=position>=sequence.length-1;
  window.scrollTo(0,0);$('#readerTitle').focus({preventScroll:true});
 }
+// Only https YouTube links are shown (the server also filters these; community data is re-checked here).
+function youtubeUrl(value){try{const u=new URL(String(value||''));const host=u.hostname.replace(/^(www\.|m\.|music\.)/,'');return u.protocol==='https:'&&(host==='youtube.com'||host==='youtu.be')?u.href:'';}catch{return '';}}
 function renderLyrics(){
  const lang=hasLyrics(current,language)?language:hasLyrics(current,'hindi')?'hindi':'roman';
  all('[data-lang]').forEach(b=>{b.disabled=!hasLyrics(current,b.dataset.lang);b.setAttribute('aria-pressed',b.dataset.lang===lang);b.title=b.disabled?'This version is not available in the collection':'';});

@@ -82,3 +82,10 @@
   .success-buttons{flex-direction:column}
 }
 
+
+/* Tune reference link in the reader and public-name note on the submit form */
+.youtube-link{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;margin:0 0 16px;border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--paper);color:var(--accent);font-weight:600;font-size:14px;text-decoration:none}
+.youtube-link small{color:var(--muted);font-weight:400}
+.youtube-link:hover,.youtube-link:focus-visible{border-color:var(--accent)}
+.singing .youtube-link{display:none}
+.public-note{margin:8px 0 0;font-size:12px;color:var(--muted)}
