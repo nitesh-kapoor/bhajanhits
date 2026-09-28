@@ -1,6 +1,6 @@
 // Cloudflare Pages Function: /api/submit-bhajan
 // Handles bhajan submissions, runs Gemini AI guardrails & extraction,
-// and commits verified devotional hymns directly to GitHub.
+// and saves verified devotional hymns to the BHAJAN_SUBMISSIONS KV namespace.
 
 export async function onRequestPost(context) {
   const corsHeaders = {
@@ -21,11 +21,12 @@ export async function onRequestPost(context) {
       contributorName,
       contributorLocation
     } = body;
+    const isImage = mode === 'photo' || mode === 'image'; // app.js sends 'photo'
 
-    if (mode === 'image' && !imageData) {
+    if (isImage && !imageData) {
       return new Response(JSON.stringify({ error: 'Image data is required.' }), { status: 400, headers: corsHeaders });
     }
-    if (mode === 'text' && (!lyricsText || lyricsText.trim().length < 15)) {
+    if (!isImage && (typeof lyricsText !== 'string' || lyricsText.trim().length < 15)) {
       return new Response(JSON.stringify({ error: 'Please enter at least a few lines of lyrics.' }), { status: 400, headers: corsHeaders });
     }
 
@@ -78,12 +79,12 @@ Respond ONLY with valid raw JSON. Do not include markdown code block formatting 
     const contents = [];
     const parts = [{ text: systemPrompt }];
 
-    if (mode === 'image') {
+    if (isImage) {
       // Clean base64 if it has data URL prefix
       const cleanBase64 = imageData.replace(/^data:image\/[a-zA-Z]+;base64,/, '');
       parts.push({
         inlineData: {
-          mimeType: imageMime,
+          mimeType: /^image\/[a-z0-9.+-]+$/i.test(imageMime) ? imageMime : 'image/jpeg',
           data: cleanBase64
         }
       });
@@ -136,164 +137,75 @@ Respond ONLY with valid raw JSON. Do not include markdown code block formatting 
         reason: parsedResult.reason || 'This upload could not be verified as a devotional hymn.'
       }), { status: 200, headers: corsHeaders });
     }
-
-    // 4. Construct Contributor Attribution & Source
-    let sourceText = 'Contributed with devotion';
-    if (contributorName && contributorName.trim()) {
-      sourceText = `Contributed with devotion by ${contributorName.trim()}`;
-      if (contributorLocation && contributorLocation.trim()) {
-        sourceText += ` (${contributorLocation.trim()})`;
-      }
+    if (parsedResult.status !== 'approved') {
+      return new Response(JSON.stringify({ status: 'error', error: 'AI returned an unexpected result. Please try again.' }), { status: 502, headers: corsHeaders });
     }
 
-    // 5. GitHub Commit Pipeline
-    const githubToken = context.env?.GITHUB_TOKEN;
-    const githubRepo = context.env?.GITHUB_REPO || 'nitesh-kapoor/bhajanhits';
+    // 4. Validate and normalise the AI output before storing it
+    const clip = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+    const titleEn = clip(parsedResult.titleEn, 150);
+    const god = ALLOWED_DEITIES.includes(parsedResult.god) ? parsedResult.god : 'Multiple Deities';
+    const type = ALLOWED_TYPES.includes(parsedResult.type) ? parsedResult.type : 'Bhajan';
+    const hindi = clip(parsedResult.hindi, 20000);
+    const roman = clip(parsedResult.roman, 20000);
+    if (!titleEn || (!hindi && !roman)) {
+      return new Response(JSON.stringify({ status: 'error', error: 'AI could not extract a title and lyrics. Please try a clearer photo or paste the text.' }), { status: 422, headers: corsHeaders });
+    }
 
-    if (!githubToken) {
-      // Return approved preview if GitHub token is not yet configured
+    const name = clip(contributorName, 60);
+    const location = clip(contributorLocation, 80);
+    let sourceText = 'Contributed with devotion';
+    if (name) {
+      sourceText = `Contributed with devotion by ${name}`;
+      if (location) sourceText += ` (${location})`;
+    }
+
+    const newEntry = {
+      id: Date.now(),
+      titleEn,
+      titleHi: clip(parsedResult.titleHi, 150),
+      god,
+      godHi: clip(parsedResult.godHi, 60),
+      type,
+      hindi,
+      roman,
+      desc: clip(parsedResult.desc, 300),
+      source: sourceText,
+      community: true,
+      submittedAt: new Date().toISOString()
+    };
+    const yt = cleanYoutubeUrl(youtubeUrl);
+    if (yt) newEntry.youtubeUrl = yt;
+    if (name) newEntry.contributorName = name;
+    if (location) newEntry.contributorLocation = location;
+
+    // 5. Save to Cloudflare KV (single "submissions" key holding a JSON array)
+    const kv = context.env?.BHAJAN_SUBMISSIONS;
+    if (!kv) {
       return new Response(JSON.stringify({
         status: 'preview_only',
-        item: {
-          ...parsedResult,
-          source: sourceText,
-          youtubeUrl: youtubeUrl?.trim() || null,
-          contributorName: contributorName?.trim() || null,
-          contributorLocation: contributorLocation?.trim() || null
-        },
-        message: 'Bhajan passed guardrails and formatted! To enable automatic commit, please add GITHUB_TOKEN to Cloudflare Pages settings.'
+        item: newEntry,
+        message: 'Bhajan passed guardrails and was formatted, but it was not saved: the BHAJAN_SUBMISSIONS KV binding is not configured.'
       }), { status: 200, headers: corsHeaders });
     }
 
-    // Fetch data.js from GitHub
-    const ghHeaders = {
-      'Authorization': `Bearer ${githubToken}`,
-      'Accept': 'application/vnd.github.v3+json',
-      'User-Agent': 'BhaktiBhajanSangrah-App'
-    };
-
-    const dataJsRes = await fetch(`https://api.github.com/repos/${githubRepo}/contents/data.js`, { headers: ghHeaders });
-    if (!dataJsRes.ok) {
+    const submissions = await kv.get('submissions', { type: 'json' }) || [];
+    const titleKey = titleSlug(titleEn);
+    const builtInTitles = await loadBuiltInTitleKeys(context);
+    if (builtInTitles.has(titleKey) || submissions.some(s => titleSlug(s.titleEn || '') === titleKey)) {
       return new Response(JSON.stringify({
-        status: 'error',
-        error: `Could not fetch data.js from GitHub (${dataJsRes.status}). Check token permissions.`
-      }), { status: 502, headers: corsHeaders });
+        status: 'rejected',
+        reason: `"${titleEn}" is already in the collection. Thank you for your devotion!`
+      }), { status: 200, headers: corsHeaders });
     }
 
-    const dataJsMeta = await dataJsRes.json();
-    const dataJsContent = decodeUtf8Base64(dataJsMeta.content);
-
-    // Find highest ID in data.js
-    const idMatches = [...dataJsContent.matchAll(/id:\s*(\d+)/g)];
-    const existingIds = idMatches.map(m => Number(m[1]));
-    const nextId = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 166;
-
-    // Create the new Bhajan record
-    const newEntry = {
-      id: nextId,
-      titleEn: parsedResult.titleEn,
-      titleHi: parsedResult.titleHi,
-      god: parsedResult.god,
-      godHi: parsedResult.godHi,
-      type: parsedResult.type,
-      hindi: parsedResult.hindi,
-      roman: parsedResult.roman,
-      desc: parsedResult.desc || '',
-      source: sourceText
-    };
-
-    if (youtubeUrl && youtubeUrl.trim()) {
-      newEntry.youtubeUrl = youtubeUrl.trim();
-    }
-    if (contributorName && contributorName.trim()) {
-      newEntry.contributorName = contributorName.trim();
-    }
-    if (contributorLocation && contributorLocation.trim()) {
-      newEntry.contributorLocation = contributorLocation.trim();
-    }
-
-    // Format new entry JSON
-    const entryString = `,\n  ` + JSON.stringify(newEntry, null, 2).replace(/\n/g, '\n  ');
-
-    // Insert before the last closing bracket of bhajans array
-    const lastBracketIdx = dataJsContent.lastIndexOf('];');
-    if (lastBracketIdx === -1) {
-      return new Response(JSON.stringify({ status: 'error', error: 'Could not locate closing bhajans array in data.js.' }), { status: 500, headers: corsHeaders });
-    }
-
-    const updatedDataJs = dataJsContent.slice(0, lastBracketIdx).trimEnd() + entryString + '\n];\n';
-
-    // 5a. Backup current data.js before overwriting
-    //     Path: backups/data_MMDDYY_HHMMSSms.js  (e.g. backups/data_092726_150601123.js)
-    try {
-      const now = new Date();
-      const pad = (n, w = 2) => String(n).padStart(w, '0');
-      const tsLabel =
-        pad(now.getUTCMonth() + 1) + pad(now.getUTCDate()) +
-        String(now.getUTCFullYear()).slice(-2) + '_' +
-        pad(now.getUTCHours()) + pad(now.getUTCMinutes()) +
-        pad(now.getUTCSeconds()) + pad(now.getUTCMilliseconds(), 3);
-      const backupPath = `backups/data_${tsLabel}.js`;
-
-      await fetch(`https://api.github.com/repos/${githubRepo}/contents/${backupPath}`, {
-        method: 'PUT',
-        headers: ghHeaders,
-        body: JSON.stringify({
-          message: `Backup data.js before adding ID ${nextId} (${parsedResult.titleEn})`,
-          // GitHub returns base64 with \n line-wrapping — strip it before re-POSTing
-          content: dataJsMeta.content.replace(/\n/g, '')
-        })
-      });
-    } catch (backupErr) {
-      // Backup is best-effort — log but do not abort the submission
-      console.error('Backup step failed (non-fatal):', backupErr);
-    }
-
-    // 5b. Commit updated data.js to GitHub
-    const putDataRes = await fetch(`https://api.github.com/repos/${githubRepo}/contents/data.js`, {
-      method: 'PUT',
-      headers: ghHeaders,
-      body: JSON.stringify({
-        message: `Add ${parsedResult.type}: ${parsedResult.titleEn} (ID ${nextId})`,
-        content: encodeUtf8Base64(updatedDataJs),
-        sha: dataJsMeta.sha
-      })
-    });
-
-    if (!putDataRes.ok) {
-      const err = await putDataRes.text();
-      return new Response(JSON.stringify({ status: 'error', error: `GitHub commit for data.js failed: ${err}` }), { status: 502, headers: corsHeaders });
-    }
-
-    // Increment Service Worker Cache Version
-    try {
-      const swRes = await fetch(`https://api.github.com/repos/${githubRepo}/contents/sw.js`, { headers: ghHeaders });
-      if (swRes.ok) {
-        const swMeta = await swRes.json();
-        const swContent = decodeUtf8Base64(swMeta.content);
-        const versionMatch = swContent.match(/bbs-static-v(\d+)/);
-        if (versionMatch) {
-          const nextVersion = Number(versionMatch[1]) + 1;
-          const updatedSw = swContent.replace(/bbs-static-v\d+/, `bbs-static-v${nextVersion}`);
-          await fetch(`https://api.github.com/repos/${githubRepo}/contents/sw.js`, {
-            method: 'PUT',
-            headers: ghHeaders,
-            body: JSON.stringify({
-              message: `Bump service worker cache to v${nextVersion} for ${parsedResult.titleEn}`,
-              content: encodeUtf8Base64(updatedSw),
-              sha: swMeta.sha
-            })
-          });
-        }
-      }
-    } catch (e) {
-      // SW version bump is progressive enhancement; do not fail overall request if it fails
-    }
+    submissions.push(newEntry);
+    await kv.put('submissions', JSON.stringify(submissions));
 
     return new Response(JSON.stringify({
       status: 'success',
       item: newEntry,
-      assignedId: nextId
+      assignedId: newEntry.id
     }), { status: 200, headers: corsHeaders });
 
   } catch (err) {
@@ -316,20 +228,36 @@ export async function onRequestOptions() {
   });
 }
 
-// UTF-8 aware Base64 helpers
-function decodeUtf8Base64(base64) {
-  const cleanBase64 = base64.replace(/\s/g, '');
-  const binString = atob(cleanBase64);
-  const bytes = Uint8Array.from(binString, c => c.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
+const ALLOWED_DEITIES = ["Lord Krishna", "Lord Shiva", "Durga Maa", "Lord Rama", "Lord Hanuman", "Lord Ganesha", "Sai Baba", "Saraswati Maa", "Lakshmi Maa", "Santoshi Maa", "Lord Vishnu", "Surya Dev", "Khatu Shyam Ji", "Guru & Family", "Multiple Deities"];
+const ALLOWED_TYPES = ["Bhajan", "Aarti", "Chalisa", "Mantra", "Sundarkand"];
+
+// Same slug rule as app.js, so duplicate checks match the site's URLs.
+function titleSlug(title) {
+  return String(title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-function encodeUtf8Base64(str) {
-  const bytes = new TextEncoder().encode(str);
-  let binString = '';
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binString += String.fromCharCode(bytes[i]);
+// Best-effort read of titles in the static data.js (handles both quoting styles used there).
+async function loadBuiltInTitleKeys(context) {
+  const keys = new Set();
+  try {
+    const res = await context.env.ASSETS.fetch(new URL('/data.js', context.request.url));
+    if (!res.ok) return keys;
+    const text = await res.text();
+    for (const m of text.matchAll(/"?titleEn"?\s*:\s*(['"])((?:\\.|(?!\1).)*)\1/g)) {
+      keys.add(titleSlug(m[2].replace(/\\(.)/g, '$1')));
+    }
+  } catch (e) {
+    console.error('Could not read data.js for duplicate check:', e);
   }
-  return btoa(binString);
+  return keys;
+}
+
+function cleanYoutubeUrl(value) {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  try {
+    const url = new URL(value.trim());
+    const host = url.hostname.replace(/^(www\.|m\.|music\.)/, '');
+    if (url.protocol === 'https:' && (host === 'youtube.com' || host === 'youtu.be')) return url.href.slice(0, 300);
+  } catch (e) {}
+  return null;
 }
