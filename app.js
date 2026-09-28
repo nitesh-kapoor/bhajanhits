@@ -11,12 +11,19 @@ const slug = x => x.slug || x.titleEn.toLowerCase().replace(/[^a-z0-9]+/g,'-').r
 const adapt = b => ({...b,titleEn:b.titleEnglish ?? b.titleEn,titleHi:b.titleHindi ?? b.titleHi,god:b.deity ?? b.god,hindi:b.lyricsHindi ?? b.hindi,roman:b.lyricsRomanized ?? b.roman});
 const items = bhajans.map(adapt);
 const songNumbers = new Map(), ids = new Set(), index = new Map();
-const songNumber = x => songNumbers.get(x.id); // Alphabetical collection numbers, shared by every view.
+const songNumber = x => songNumbers.get(x.id); // Permanent song numbers, shared by every view.
 const normalized = s => String(s??'').normalize('NFKD').replace(/[̀-ͯ]/g,'').toLowerCase();
+// Permanent numbers: the original 65 keep the A–Z numbers groups already use (id: number).
+// Every later song keeps the number stored with it (`no`, assigned by the server for community songs);
+// anything without one gets the next free number in id order. Numbers never shift when songs are added.
+const fixedNumbers={142:1,150:2,115:3,117:4,157:5,127:6,129:7,148:8,109:9,158:10,102:11,161:12,111:13,130:14,135:15,104:16,159:17,134:18,137:19,132:20,146:21,164:22,120:23,145:24,160:25,113:26,156:27,131:28,121:29,153:30,155:31,154:32,151:33,110:34,149:35,108:36,116:37,126:38,123:39,105:40,128:41,147:42,107:43,106:44,152:45,141:46,133:47,136:48,139:49,140:50,143:51,162:52,114:53,163:54,118:55,125:56,119:57,124:58,103:59,165:60,144:61,138:62,112:63,122:64,101:65};
 function rebuildIndex(){
- items.sort((a,b)=>a.titleEn.localeCompare(b.titleEn,'en',{sensitivity:'base',numeric:true})||a.id-b.id);
  songNumbers.clear();ids.clear();index.clear();
- items.forEach((x,i)=>{songNumbers.set(x.id,i+1);ids.add(x.id);index.set(x.id,normalized([x.titleEn,x.titleHi,x.god,x.godHi,...(x.deities||[]),x.type,x.roman].join(' ')));});
+ const taken=new Set(),pending=[];
+ [...items].sort((a,b)=>a.id-b.id).forEach(x=>{const n=Number.isInteger(x.no)&&x.no>0?x.no:fixedNumbers[x.id];if(n&&!taken.has(n)){taken.add(n);songNumbers.set(x.id,n);}else pending.push(x);});
+ let next=Math.max(0,...taken);pending.forEach(x=>songNumbers.set(x.id,++next));
+ items.sort((a,b)=>songNumber(a)-songNumber(b));
+ items.forEach(x=>{ids.add(x.id);index.set(x.id,normalized([x.titleEn,x.titleHi,x.god,x.godHi,...(x.deities||[]),x.type,x.roman].join(' ')));});
 }
 rebuildIndex();
 // Community bhajans from /api/bhajans; skip anything malformed or clashing with an existing id or URL slug.
@@ -56,9 +63,32 @@ function render(){
  all('[data-view]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===view));
  all('[data-god]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.god===god));
  all('[data-type]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.type===type));
- $('#cards').innerHTML=list.map(x=>`<li class="card" value="${songNumber(x)}"><button class="card-main" data-open="${x.id}"><span class="song-number" aria-label="Song ${songNumber(x)}">${songNumber(x)}</span><span class="song-info"><span class="meta">${esc(x.god)} · ${esc(x.type)}</span><h3>${esc(x.titleEn)}</h3><span class="hindi-title" lang="hi">${esc(x.titleHi)}</span></span></button><button class="heart" data-favorite="${x.id}" aria-pressed="${favorites.has(x.id)}" aria-label="${favorites.has(x.id)?'Remove from':'Add to'} favorites: ${esc(x.titleEn)}">${favorites.has(x.id)?'♥':'♡'}</button></li>`).join('') || '<li class="empty"><p>'+ (view==='favorites'?'Your favorite prayers will be here. Tap a heart to save one.':view==='recent'?'Items you open will appear here.':'No prayers match these filters. More devotional content can be added to the collection.')+'</p><button data-clear>Browse all items</button></li>';
+ $('#cards').innerHTML=list.map(x=>`<li class="card" value="${songNumber(x)}" style="--deity:${deityColor(x.god)}"><button class="card-main" data-open="${x.id}"><span class="song-number" aria-label="Song ${songNumber(x)}">${songNumber(x)}</span><span class="song-info"><span class="meta"><span aria-hidden="true">${deityIcon(x.god)}</span> ${esc(x.god)} · ${esc(x.type)}${isNew(x)?' <span class="new-badge">New</span>':''}</span><h3>${esc(x.titleEn)}</h3><span class="hindi-title" lang="hi">${esc(x.titleHi)}</span></span></button><button class="heart" data-favorite="${x.id}" aria-pressed="${favorites.has(x.id)}" aria-label="${favorites.has(x.id)?'Remove from':'Add to'} favorites: ${esc(x.titleEn)}">${favorites.has(x.id)?'♥':'♡'}</button></li>`).join('') || '<li class="empty"><p>'+ (view==='favorites'?'Your favorite prayers will be here. Tap a heart to save one.':view==='recent'?'Items you open will appear here.':'No prayers match these filters. More devotional content can be added to the collection.')+'</p><button data-clear>Browse all items</button></li>';
+ renderHome();
 }
-function renderCategories(){$('#categoryGrid').innerHTML=[['','All Deities',''],...categories.filter(c=>items.some(x=>x.god===c[1]||(x.deities||[]).includes(c[1])))].map(c=>`<button class="category" data-god="${esc(c[1]==='All Deities'?'all':c[1])}"><span class="icon" aria-hidden="true">${c[0]||'✧'}</span><span>${esc(c[1])}</span></button>`).join('');}
+// Deity accents for cards; darker shades keep the number readable on its tinted badge.
+const deityColors={'Lord Hanuman':'#c4541a','Lord Rama':'#5f7f24','Lord Krishna':'#2f5fa7','Radha Rani':'#b83f78','Lord Shiva':'#44657f','Durga Maa':'#b3302c','Lakshmi Maa':'#a0760c','Saraswati Maa':'#2f7f6c','Lord Ganesha':'#b5621a','Sai Baba':'#80623a','Surya Dev':'#a86f0a','Khatu Shyam Ji':'#1f6a86','Lord Vishnu':'#3a57a0','Santoshi Maa':'#a3437f','Guru & Family':'#6b5a8e'};
+const deityColor=god=>deityColors[god]||'#853c29';
+const deityIcon=god=>(categories.find(c=>c[1]===god)||['✧'])[0];
+const isNew=x=>x.community&&Date.now()-Date.parse(x.submittedAt||0)<30*864e5; // community songs added in the last 30 days
+// Home extras (Bhajan of the day, Newly added) only show on the plain, unfiltered home view.
+function renderHome(){
+ const home=view==='all'&&god==='all'&&type==='all'&&!$('#search').value.trim()&&items.length>0;
+ $('#homeExtras').hidden=!home;if(!home)return;
+ const now=new Date(),day=Math.floor(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate())/864e5); // changes at local midnight
+ const today=items[day%items.length];
+ $('#todayCard').style.setProperty('--deity',deityColor(today.god));
+ $('#todayCard').innerHTML=`<span class="eyebrow">Aaj ka Bhajan · Bhajan of the day</span><button class="today-main" data-open="${today.id}"><span class="song-number" aria-label="Song ${songNumber(today)}">${songNumber(today)}</span><span class="song-info"><span class="meta"><span aria-hidden="true">${deityIcon(today.god)}</span> ${esc(today.god)} · ${esc(today.type)}</span><h3>${esc(today.titleEn)}</h3><span class="hindi-title" lang="hi">${esc(today.titleHi)}</span></span><span class="today-go" aria-hidden="true">→</span></button>`;
+ const fresh=items.filter(x=>x.community).sort((a,b)=>b.id-a.id).slice(0,8);
+ $('#newlyAdded').hidden=!fresh.length;
+ $('#newlyList').innerHTML=fresh.map(x=>`<li style="--deity:${deityColor(x.god)}"><button data-open="${x.id}"><span class="song-number">${songNumber(x)}</span><span class="song-info"><strong>${esc(x.titleEn)}</strong><small>${x.contributorName?'by '+esc(x.contributorName)+(x.contributorLocation?', '+esc(x.contributorLocation):''):'Community contribution'}</small></span></button></li>`).join('');
+}
+function renderCategories(){
+ const used=[['','All Deities',''],...categories.filter(c=>items.some(x=>x.god===c[1]||(x.deities||[]).includes(c[1])))];
+ $('#categoryGrid').innerHTML=used.map(c=>`<button class="category" data-god="${esc(c[1]==='All Deities'?'all':c[1])}"><span class="icon" aria-hidden="true">${c[0]||'✧'}</span><span>${esc(c[1])}</span></button>`).join('');
+ // Home quick-pick row: same data-god buttons, so the shared click handler and pressed state apply.
+ $('#deityChips').innerHTML=used.map(c=>`<button class="deity-chip" data-god="${esc(c[1]==='All Deities'?'all':c[1])}" style="--deity:${c[1]==='All Deities'?'#853c29':deityColor(c[1])}"><span aria-hidden="true">${c[0]||'✧'}</span>${esc(c[1]==='All Deities'?'All':c[1].replace(/^Lord /,''))}</button>`).join('');
+}
 renderCategories();
 $('.filters').innerHTML=['all','Bhajan','Aarti','Chalisa','Mantra','Sundarkand'].map(t=>`<button data-type="${t}">${t==='all'?'All Types':t}</button>`).join('');
 function clearFilters(){god=type='all';view='all';$('#search').value='';render();}

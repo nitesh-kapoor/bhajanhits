@@ -89,3 +89,31 @@
 .youtube-link:hover,.youtube-link:focus-visible{border-color:var(--accent)}
 .singing .youtube-link{display:none}
 .public-note{margin:8px 0 0;font-size:12px;color:var(--muted)}
+
+/* Home refresh: deity accents, quick-pick chips, Bhajan of the day, Newly added */
+.card{border-left:4px solid var(--deity,var(--line))}
+.card .song-number,.today-card .song-number,.newly-list .song-number{background:#f1e6d8;background:color-mix(in srgb,var(--deity,#853c29) 13%,#fffdf8);color:var(--deity,var(--accent));font-weight:700}
+.card-main .meta{color:var(--deity,var(--accent))}
+.new-badge{display:inline-block;margin-left:4px;padding:1px 6px;border-radius:6px;background:#1f7a4d;color:#fff;font-size:9px;letter-spacing:.5px;text-transform:uppercase;vertical-align:1px}
+.deity-chips{display:flex;gap:8px;overflow-x:auto;padding:12px 1px 4px;scrollbar-width:none;scroll-snap-type:x proximity}
+.deity-chips::-webkit-scrollbar{display:none}
+.deity-chip{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:8px 14px;font-size:13px;scroll-snap-align:start;border-color:color-mix(in srgb,var(--deity) 35%,#e4d9c9)}
+.deity-chip[aria-pressed=true]{background:var(--deity);border-color:var(--deity);color:#fff}
+.home-extras{display:grid;gap:12px;margin:14px 0 4px}
+.home-extras>*{min-width:0}
+.today-card{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--deity);border-radius:12px;padding:12px 12px 6px}
+.today-card .eyebrow{display:block;color:var(--deity);margin:0 0 2px}
+.today-main{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:none;padding:6px 0 8px}
+.today-main h3{font-family:Georgia,serif;font-weight:400;font-size:20px;line-height:1.3;margin:2px 0}
+.today-main .meta{font-size:10px;font-weight:600;color:var(--deity)}
+.today-main .hindi-title{font-size:14px;color:var(--muted)}
+.today-go{margin-left:auto;font-size:20px;color:var(--deity)}
+.mini-heading{font-size:17px;margin:0 0 8px}
+.newly-list{list-style:none;margin:0;padding:0 1px 6px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:thin}
+.newly-list li{flex:0 0 230px}
+.newly-list button{display:flex;align-items:center;gap:10px;width:100%;height:100%;text-align:left;border-left:4px solid var(--deity);border-radius:10px;padding:10px}
+.newly-list .song-number{flex:0 0 34px;min-height:34px;display:grid;place-items:center;border-radius:8px;font-size:15px}
+.newly-list .song-info{min-width:0}
+.newly-list strong{display:block;font-size:13px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.newly-list small{display:block;margin-top:3px;font-size:11px;font-weight:400;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(min-width:768px){.home-extras{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);align-items:stretch}.newly-added{min-width:0}.deity-chips{flex-wrap:wrap;overflow:visible}}

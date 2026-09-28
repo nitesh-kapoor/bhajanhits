@@ -270,6 +270,13 @@ Respond ONLY with valid raw JSON. Do not include markdown code block formatting 
       }), { status: 200, headers: corsHeaders });
     }
 
+    // Permanent song number: the next after the highest in use. The original data.js collection is
+    // numbered 1-65 in app.js; older submissions saved before numbers existed are numbered first, in
+    // submission order, exactly as app.js already displays them.
+    let topNumber = Math.max(LAST_BUILTIN_NUMBER, ...submissions.map(s => Number.isInteger(s.no) ? s.no : 0));
+    submissions.filter(s => !Number.isInteger(s.no)).sort((a, b) => a.id - b.id).forEach(s => { s.no = ++topNumber; });
+    newEntry.no = ++topNumber;
+
     submissions.push(newEntry);
     await kv.put('submissions', JSON.stringify(submissions));
 
@@ -301,6 +308,7 @@ export async function onRequestOptions() {
 
 const ALLOWED_DEITIES = ["Lord Krishna", "Lord Shiva", "Durga Maa", "Lord Rama", "Lord Hanuman", "Lord Ganesha", "Sai Baba", "Saraswati Maa", "Lakshmi Maa", "Santoshi Maa", "Lord Vishnu", "Surya Dev", "Khatu Shyam Ji", "Guru & Family", "Multiple Deities"];
 const ALLOWED_TYPES = ["Bhajan", "Aarti", "Chalisa", "Mantra", "Sundarkand"];
+const LAST_BUILTIN_NUMBER = 65; // highest permanent number in app.js fixedNumbers (original collection)
 
 // Same slug rule as app.js, so duplicate checks match the site's URLs.
 function titleSlug(title) {

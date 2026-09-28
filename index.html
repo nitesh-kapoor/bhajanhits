@@ -20,7 +20,9 @@
 <main id="main">
 <div id="browse">
 <section class="search-bar" aria-label="Find a bhajan"><label class="sr-only" for="search">Search bhajans, aarti, deity</label><div class="search-wrap"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search title, deity or song #…" autocomplete="off"></div></section>
+<nav id="deityChips" class="deity-chips" aria-label="Quick pick by deity"></nav>
 <p id="activeFilters" class="active-filters" hidden></p>
+<section id="homeExtras" class="home-extras" aria-label="Featured bhajans" hidden><div id="todayCard" class="today-card"></div><div id="newlyAdded" class="newly-added" hidden><h2 class="mini-heading">Newly added</h2><ol id="newlyList" class="newly-list"></ol></div></section>
 <section id="collection"><div class="section-heading"><h2 id="collectionTitle">The Collection</h2><div class="heading-actions"><button id="quickSubmit" class="text-button" aria-label="Submit a new bhajan">+ Submit Bhajan</button><button id="reset" class="text-button" hidden>Clear filters</button></div></div><p id="resultCount" class="muted" role="status"></p><ol id="cards" class="cards" aria-label="Numbered bhajan collection"></ol></section>
 <footer><div class="creator-credit"><span class="creator-label">Created with devotion by</span><strong>Nitesh Kapoor</strong><span class="creator-note">A collection to bring us together in prayer.</span></div><small>Hindi &amp; Romanized Hindi • For our community</small></footer>
 </div>
