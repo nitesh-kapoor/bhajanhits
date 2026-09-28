@@ -39,7 +39,10 @@ const savedList = key => { const v=store.get(key,[]); return Array.isArray(v)? [
 let favorites = new Set(savedList('favorites')), recent = savedList('recent').slice(0,10);
 let language = store.get('language','hindi') === 'roman' ? 'roman':'hindi';
 let size = Number(store.get('fontSize',24)); size=Number.isFinite(size)?Math.max(18,Math.min(40,size)):24;
-let god='all', type='all', view='all', current=null, sequence=[], singing=false, wakeLock=null, wakePending=false, browseScroll=0, lastOpened=null, noticeTimer;
+const DEFAULT_TYPE='Bhajan'; // the home page opens on Bhajans; searching always looks across every type
+// Type tabs on the home page. Chalisa and Sundarkand (none yet) appear under All.
+const typeTabs=[['Bhajan','Bhajan'],['Aarti','Aarti'],['Chanting','Chanting'],['Mantra','Mantra'],['all','All']];
+let god='all', type=DEFAULT_TYPE, view='all', current=null, sequence=[], singing=false, wakeLock=null, wakePending=false, browseScroll=0, lastOpened=null, noticeTimer;
 const unavailableHindi = new Set([102,103,104,105]); // Original PDF-unavailable notices, not lyrics.
 const hasLyrics = (x,lang) => typeof x[lang]==='string' && x[lang].trim().length>0 && !(lang==='hindi' && unavailableHindi.has(x.id) && x[lang].includes('PDF में उपलब्ध नहीं'));
 function notify(message){ $('#notice').textContent=message; $('#notice').hidden=false; clearTimeout(noticeTimer); noticeTimer=setTimeout(()=>$('#notice').hidden=true,4000); }
@@ -47,23 +50,34 @@ function matching(){
  const query=$('#search').value.trim();
  const numberQuery=/^#?\d+$/.test(query)?Number(query.replace('#','')):null;
  const terms=numberQuery===null?normalized(query).split(/\s+/).filter(Boolean):[];
- let list=items.filter(x=>(god==='all'||god===x.god||(x.deities||[]).includes(god))&&(type==='all'||type===x.type)&&(view!=='favorites'||favorites.has(x.id))&&(view!=='recent'||recent.includes(x.id))&&(numberQuery===null||songNumber(x)===numberQuery)&&terms.every(t=>index.get(x.id).includes(t)));
+ // Type tabs apply while browsing; a search (or Favorites / Recent) looks across every type.
+ const typeFilter=query||view!=='all'?'all':type;
+ let list=items.filter(x=>(god==='all'||god===x.god||(x.deities||[]).includes(god))&&(typeFilter==='all'||typeFilter===x.type)&&(view!=='favorites'||favorites.has(x.id))&&(view!=='recent'||recent.includes(x.id))&&(numberQuery===null||songNumber(x)===numberQuery)&&terms.every(t=>index.get(x.id).includes(t)));
  if(view==='recent') list.sort((a,b)=>recent.indexOf(a.id)-recent.indexOf(b.id));
+ else list.sort(byTitle); // displayed A–Z; Previous/Next in the reader follow the same order
  return list;
 }
+const byTitle=(a,b)=>a.titleEn.localeCompare(b.titleEn,'en',{sensitivity:'base',numeric:true})||a.id-b.id;
+const initial=x=>{const c=normalized(x.titleEn).trim().charAt(0).toUpperCase();return /[A-Z]/.test(c)?c:'#';};
+const plural={Bhajan:'Bhajans',Aarti:'Aartis',Chanting:'Chanting',Mantra:'Mantras',all:'All songs'};
 function render(){
- const list=matching();
- $('#favoriteCount').textContent=[...favorites].filter(id=>ids.has(id)).length;
- $('#showResults').textContent='Show '+list.length+(list.length===1?' item':' items');
- const filters=[view==='favorites'?'Favorites':view==='recent'?'Recently viewed':'',god==='all'?'':god,type==='all'?'':type].filter(Boolean);
- $('#activeFilters').textContent=filters.join(' · ');$('#activeFilters').hidden=!filters.length;
- $('#collectionTitle').textContent=view==='favorites'?'My Favorites':view==='recent'?'Recently Viewed':god!=='all'?god:'The Collection';
- $('#resultCount').textContent=list.length+' '+(list.length===1?'item':'items')+(type!=='all'?' · '+type:'');
- $('#reset').hidden=god==='all'&&type==='all'&&!$('#search').value;
+ const list=matching(),query=$('#search').value.trim();
+ const favCount=[...favorites].filter(id=>ids.has(id)).length;
+ $('#favoriteCount').textContent=favCount;$('#favoriteCount').hidden=!favCount;
+ $('#activeFilters').hidden=true;
+ $('#collectionTitle').textContent=view==='favorites'?'My Favorites':view==='recent'?'Recently Viewed':query?'Search results':god!=='all'?god+(type!=='all'?' · '+plural[type]:''):plural[type]||'The Collection';
+ $('#resultCount').textContent=list.length+' '+(list.length===1?'item':'items');
+ $('#reset').hidden=view==='all'&&god==='all'&&type===DEFAULT_TYPE&&!query;
+ $('#typeTabs').classList.toggle('inactive',!!query||view!=='all');
  all('[data-view]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===view));
  all('[data-god]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.god===god));
  all('[data-type]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.type===type));
- $('#cards').innerHTML=list.map(x=>`<li class="card" value="${songNumber(x)}" style="--deity:${deityColor(x.god)}"><button class="card-main" data-open="${x.id}"><span class="song-number" aria-label="Song ${songNumber(x)}">${songNumber(x)}</span><span class="song-info"><span class="meta"><span aria-hidden="true">${deityIcon(x.god)}</span> ${esc(x.god)} · ${esc(x.type)}${isNew(x)?' <span class="new-badge">New</span>':''}</span><h3>${esc(x.titleEn)}</h3><span class="hindi-title" lang="hi">${esc(x.titleHi)}</span></span></button><button class="heart" data-favorite="${x.id}" aria-pressed="${favorites.has(x.id)}" aria-label="${favorites.has(x.id)?'Remove from':'Add to'} favorites: ${esc(x.titleEn)}">${favorites.has(x.id)?'♥':'♡'}</button></li>`).join('') || '<li class="empty"><p>'+ (view==='favorites'?'Your favorite prayers will be here. Tap a heart to save one.':view==='recent'?'Items you open will appear here.':'No prayers match these filters. More devotional content can be added to the collection.')+'</p><button data-clear>Browse all items</button></li>';
+ // A–Z letter headings (not for Recently Viewed, which is in time order).
+ let letter='';
+ $('#cards').innerHTML=list.map(x=>{
+  const head=view!=='recent'&&initial(x)!==letter?(letter=initial(x),`<li class="letter-heading" aria-hidden="true">${letter}</li>`):'';
+  return head+`<li class="card" style="--deity:${deityColor(x.god)}"><button class="card-main" data-open="${x.id}"><span class="deity-icon" aria-hidden="true">${deityIcon(x.god)}</span><span class="song-info"><span class="meta">${esc(x.god)} · ${esc(x.type)}${isNew(x)?' <span class="new-badge">New</span>':''}</span><h3>${esc(x.titleEn)}</h3><span class="hindi-title" lang="hi">${esc(x.titleHi)}</span></span></button><button class="heart" data-favorite="${x.id}" aria-pressed="${favorites.has(x.id)}" aria-label="${favorites.has(x.id)?'Remove from':'Add to'} favorites: ${esc(x.titleEn)}">${favorites.has(x.id)?'♥':'♡'}</button></li>`;
+ }).join('') || '<li class="empty"><p>'+ (view==='favorites'?'Your favorite prayers will be here. Tap a heart to save one.':view==='recent'?'Items you open will appear here.':'Nothing here yet. Try another type or deity, or submit a bhajan.')+'</p><button data-clear>Show all songs</button></li>';
  renderHome();
 }
 // Deity accents for cards; darker shades keep the number readable on its tinted badge.
@@ -71,35 +85,38 @@ const deityColors={'Lord Hanuman':'#c4541a','Lord Rama':'#5f7f24','Lord Krishna'
 const deityColor=god=>deityColors[god]||'#853c29';
 const deityIcon=god=>(categories.find(c=>c[1]===god)||['✧'])[0];
 const isNew=x=>x.community&&Date.now()-Date.parse(x.submittedAt||0)<30*864e5; // community songs added in the last 30 days
-// Home extras (Bhajan of the day, Newly added) only show on the plain, unfiltered home view.
+// Home extras (Bhajan of the day, Newly added) show on the home view (any type tab, no deity or search).
 function renderHome(){
- const home=view==='all'&&god==='all'&&type==='all'&&!$('#search').value.trim()&&items.length>0;
+ const home=view==='all'&&god==='all'&&!$('#search').value.trim()&&items.length>0;
  $('#homeExtras').hidden=!home;if(!home)return;
  const now=new Date(),day=Math.floor(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate())/864e5); // changes at local midnight
  const today=items[day%items.length];
  $('#todayCard').style.setProperty('--deity',deityColor(today.god));
- $('#todayCard').innerHTML=`<span class="eyebrow">Aaj ka Bhajan · Bhajan of the day</span><button class="today-main" data-open="${today.id}"><span class="song-number" aria-label="Song ${songNumber(today)}">${songNumber(today)}</span><span class="song-info"><span class="meta"><span aria-hidden="true">${deityIcon(today.god)}</span> ${esc(today.god)} · ${esc(today.type)}</span><h3>${esc(today.titleEn)}</h3><span class="hindi-title" lang="hi">${esc(today.titleHi)}</span></span><span class="today-go" aria-hidden="true">→</span></button>`;
+ $('#todayCard').innerHTML=`<h2 class="mini-heading">Aaj ka Bhajan</h2><button class="today-main" data-open="${today.id}"><span class="deity-icon" aria-hidden="true">${deityIcon(today.god)}</span><span class="song-info"><strong>${esc(today.titleEn)}</strong><small>${esc(today.god)} · ${esc(today.type)}</small></span><span class="today-go" aria-hidden="true">→</span></button>`;
  const fresh=items.filter(x=>x.community).sort((a,b)=>b.id-a.id).slice(0,8);
  $('#newlyAdded').hidden=!fresh.length;
- $('#newlyList').innerHTML=fresh.map(x=>`<li style="--deity:${deityColor(x.god)}"><button data-open="${x.id}"><span class="song-number">${songNumber(x)}</span><span class="song-info"><strong>${esc(x.titleEn)}</strong><small>${x.contributorName?'by '+esc(x.contributorName)+(x.contributorLocation?', '+esc(x.contributorLocation):''):'Community contribution'}</small></span></button></li>`).join('');
+ $('#newlyList').innerHTML=fresh.map(x=>`<li style="--deity:${deityColor(x.god)}"><button data-open="${x.id}"><span class="deity-icon" aria-hidden="true">${deityIcon(x.god)}</span><span class="song-info"><strong>${esc(x.titleEn)}</strong><small>${x.contributorName?'by '+esc(x.contributorName)+(x.contributorLocation?', '+esc(x.contributorLocation):''):'Community contribution'}</small></span></button></li>`).join('');
 }
 function renderCategories(){
  const used=[['','All Deities',''],...categories.filter(c=>items.some(x=>x.god===c[1]||(x.deities||[]).includes(c[1])))];
- $('#categoryGrid').innerHTML=used.map(c=>`<button class="category" data-god="${esc(c[1]==='All Deities'?'all':c[1])}"><span class="icon" aria-hidden="true">${c[0]||'✧'}</span><span>${esc(c[1])}</span></button>`).join('');
+ // Type tabs with counts; data-type buttons share the click handler and pressed state.
+ const count=t=>items.filter(x=>t==='all'||x.type===t).length;
+ $('#typeTabs').innerHTML=typeTabs.map(([t,label])=>`<button data-type="${t}">${label} <span class="tab-count">${count(t)}</span></button>`).join('');
  // Home quick-pick row: same data-god buttons, so the shared click handler and pressed state apply.
  $('#deityChips').innerHTML=used.map(c=>`<button class="deity-chip" data-god="${esc(c[1]==='All Deities'?'all':c[1])}" style="--deity:${c[1]==='All Deities'?'#853c29':deityColor(c[1])}"><span aria-hidden="true">${c[0]||'✧'}</span>${esc(c[1]==='All Deities'?'All':c[1].replace(/^Lord /,''))}</button>`).join('');
 }
 renderCategories();
-$('.filters').innerHTML=['all','Bhajan','Aarti','Chalisa','Mantra','Sundarkand'].map(t=>`<button data-type="${t}">${t==='all'?'All Types':t}</button>`).join('');
-function clearFilters(){god=type='all';view='all';$('#search').value='';render();}
-$('#reset').onclick=clearFilters;
+function clearFilters(toType=DEFAULT_TYPE){god='all';type=toType;view='all';$('#search').value='';render();}
+$('#reset').onclick=()=>clearFilters();
 $('#search').oninput=render;
 document.addEventListener('click',e=>{
  const b=e.target.closest('button'); if(!b)return;
  if(b.dataset.god){god=b.dataset.god;render();}
- if(b.dataset.type){type=b.dataset.type;render();}
- if(b.dataset.view){view=b.dataset.view;god=type='all';$('#search').value='';render();}
- if(b.hasAttribute('data-clear'))clearFilters();
+ // Choosing a type goes back to browsing (a search or Favorites/Recent would otherwise override it).
+ if(b.dataset.type){type=b.dataset.type;view='all';$('#search').value='';render();}
+ // Header ♡ / 🕘 toggle their view; pressing again returns to the collection.
+ if(b.dataset.view){view=view===b.dataset.view?'all':b.dataset.view;god='all';type=DEFAULT_TYPE;$('#search').value='';render();window.scrollTo(0,0);}
+ if(b.hasAttribute('data-clear'))clearFilters('all');
  if(b.dataset.favorite)toggleFavorite(Number(b.dataset.favorite));
  if(b.dataset.open)openItem(Number(b.dataset.open));
  if(b.dataset.lang && current && hasLyrics(current,b.dataset.lang)){language=b.dataset.lang;store.set('language',language);renderLyrics();}
@@ -161,19 +178,13 @@ function setSinging(value){singing=value;document.body.classList.toggle('singing
 $('#singing').onclick=()=>setSinging(!singing);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')requestWake();else releaseWake();});
 window.addEventListener('pagehide',releaseWake);
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#shareDialog').open&&!$('#libraryDrawer').open){if(singing)setSinging(false);else if(current)$('#back').click();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#shareDialog').open&&!$('#submitDialog').open){if(singing)setSinging(false);else if(current)$('#back').click();}});
 $('#share').onclick=async()=>{
  const data={title:'Song #'+songNumber(current)+' · '+current.titleEn+' | Bhakti Bhajan Sangrah',url:location.href};
  if(navigator.share){try{await navigator.share(data);return;}catch(e){if(e.name==='AbortError')return;}}
  try{await navigator.clipboard.writeText(data.url);notify('Link copied.');}catch{$('#shareLink').value=data.url;$('#shareDialog').showModal();$('#shareLink').select();}
 };
 $('#closeShare').onclick=()=>$('#shareDialog').close();
-const drawer=$('#libraryDrawer');
-$('#openMenu').onclick=()=>{drawer.showModal();$('#openMenu').setAttribute('aria-expanded','true');};
-function closeMenu(){drawer.close();}
-$('#closeMenu').onclick=closeMenu;$('#showResults').onclick=closeMenu;
-$('#drawerReset').onclick=clearFilters;
-drawer.addEventListener('close',()=>{$('#openMenu').setAttribute('aria-expanded','false');$('#openMenu').focus();});
 // Bhajan Submission Dialog Controller
 const submitDialog = $('#submitDialog');
 let submitMode = 'photo';
@@ -206,7 +217,6 @@ function resetSubmitForm() {
 }
 
 function openSubmitModal() {
-  if (drawer.open) closeMenu();
   resetSubmitForm();
   submitDialog.showModal();
 }

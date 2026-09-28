@@ -16,14 +16,15 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="site-header"><button id="openMenu" aria-label="Open library and filters" aria-controls="libraryDrawer" aria-expanded="false">☰</button><a class="brand" href="#home"><span class="brand-mark" aria-hidden="true">ॐ</span><span>Bhakti Bhajan Sangrah<small>Bhajans, Aarti, Chalisa &amp; Mantras</small></span></a></header>
+<header class="site-header"><a class="brand" href="./"><span class="brand-mark" aria-hidden="true">ॐ</span><span>Bhakti Bhajan Sangrah<small>Bhajans, Aarti, Chanting &amp; Mantras</small></span></a><nav class="header-actions" aria-label="Your library"><button class="icon-button" data-view="favorites" aria-pressed="false" aria-label="My favorites" title="My favorites"><span aria-hidden="true">♡</span><span id="favoriteCount" class="count-badge" hidden>0</span></button><button class="icon-button" data-view="recent" aria-pressed="false" aria-label="Recently viewed" title="Recently viewed"><span aria-hidden="true">🕘</span></button><button id="openSubmit" class="header-submit" aria-label="Submit a bhajan"><span aria-hidden="true">+</span> Submit</button></nav></header>
 <main id="main">
 <div id="browse">
-<section class="search-bar" aria-label="Find a bhajan"><label class="sr-only" for="search">Search bhajans, aarti, deity</label><div class="search-wrap"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search title, deity or song #…" autocomplete="off"></div></section>
+<section class="search-bar" aria-label="Find a bhajan"><label class="sr-only" for="search">Search bhajans, aarti, deity</label><div class="search-wrap"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search bhajan, aarti or deity…" autocomplete="off"></div></section>
+<div id="typeTabs" class="type-tabs" role="group" aria-label="Type"></div>
 <nav id="deityChips" class="deity-chips" aria-label="Quick pick by deity"></nav>
 <p id="activeFilters" class="active-filters" hidden></p>
 <section id="homeExtras" class="home-extras" aria-label="Featured bhajans" hidden><div id="todayCard" class="today-card"></div><div id="newlyAdded" class="newly-added" hidden><h2 class="mini-heading">Newly added</h2><ol id="newlyList" class="newly-list"></ol></div></section>
-<section id="collection"><div class="section-heading"><h2 id="collectionTitle">The Collection</h2><div class="heading-actions"><button id="quickSubmit" class="text-button" aria-label="Submit a new bhajan">+ Submit Bhajan</button><button id="reset" class="text-button" hidden>Clear filters</button></div></div><p id="resultCount" class="muted" role="status"></p><ol id="cards" class="cards" aria-label="Numbered bhajan collection"></ol></section>
+<section id="collection"><div class="section-heading"><h2 id="collectionTitle">The Collection</h2><div class="heading-actions"><button id="reset" class="text-button" hidden>Clear filters</button></div></div><p id="resultCount" class="muted" role="status"></p><ol id="cards" class="cards" aria-label="Numbered bhajan collection"></ol></section>
 <footer><div class="creator-credit"><span class="creator-label">Created with devotion by</span><strong>Nitesh Kapoor</strong><span class="creator-note">A collection to bring us together in prayer.</span></div><small>Hindi &amp; Romanized Hindi • For our community</small></footer>
 </div>
 <article id="reader" hidden aria-labelledby="readerTitle">
@@ -38,9 +39,6 @@
 <nav class="reader-pagination" aria-label="Bhajan navigation"><button id="previous">← Previous Bhajan</button><button id="next">Next Bhajan →</button></nav>
 </article>
 </main>
-<dialog id="libraryDrawer" aria-labelledby="drawerTitle"><div class="drawer-heading"><h2 id="drawerTitle">Library &amp; filters</h2><button id="closeMenu" aria-label="Close library and filters">✕</button></div><button id="openSubmit" class="drawer-submit-btn"><span aria-hidden="true">➕</span> Submit a Bhajan <small>भजन जोड़ें</small></button><nav class="library-nav" aria-label="Your library"><button data-view="favorites" aria-pressed="false">♡ Favorites <span id="favoriteCount">0</span></button><button data-view="recent" aria-pressed="false">Recently Viewed</button></nav>
-<details id="typeFilters"><summary>Type</summary><div class="filters" role="group" aria-label="Browse by type"></div></details>
-<section id="categories" aria-label="Deity"><h2>Browse by Deity</h2><div id="categoryGrid" class="categories"></div></section><div class="drawer-creator"><span>Created with devotion by</span><strong>Nitesh Kapoor</strong></div><div class="drawer-footer"><button id="drawerReset">Reset filters</button><button id="showResults">Show items</button></div></dialog>
 <div id="notice" class="notice" role="status" hidden></div>
 <dialog id="shareDialog"><h2>Share this bhajan</h2><label for="shareLink">Copy this link</label><input id="shareLink" readonly><button id="closeShare">Done</button></dialog>
 <dialog id="submitDialog" aria-labelledby="submitTitle">

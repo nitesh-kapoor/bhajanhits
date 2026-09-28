@@ -35,12 +35,16 @@ Static devotional-song website (Hindi lyrics + Romanized Hindi) with AI-checked 
 7. Gemini billing: paid Cloud Prepay, $5, auto-reload off (hard limit). When credit runs out, submissions fail with a friendly message; browsing is unaffected.
 8. Live guardrail test (real Gemini, in-memory KV, saves nothing): `node C:\Nitesh\bhajan-guardrail-test\guardrail-live-test.mjs [case numbers]` (kept outside the repo). Re-run after changing the prompt or checks.
 
-## Song numbers (important for group singing)
-- Numbers are permanent. The original 65 keep their A-Z numbers 1-65 (`fixedNumbers` map in app.js). Each later song keeps its stored `no`; community numbers are assigned by the server as the next free number (`LAST_BUILTIN_NUMBER = 65` in submit-bhajan.js). The list is shown in number order, so new songs appear at the end with a "New" badge for 30 days.
-- If a song is ever added to data.js by hand, give it an explicit `no:` above the current highest number. Never renumber existing songs.
+## Song numbers
+- Owner decision: NO numbers on lists (home, Newly added, Aaj ka Bhajan). The list is A-Z with letter headings. A small "Song #N" shows only on the song page, and searching a number (24 or #24) still finds it, so a group leader can say "open 24".
+- Numbers are permanent. The original 65 keep their A-Z numbers 1-65 (`fixedNumbers` in app.js). Each later song keeps its stored `no`; community numbers are assigned by the server as the next free number (`LAST_BUILTIN_NUMBER = 65` in submit-bhajan.js). If a song is ever added to data.js by hand, give it an explicit `no:` above the current highest. Never renumber.
 
-## Home page
-Compact by owner preference (no big hero): search, deity quick-pick chips, "Aaj ka Bhajan" (changes daily), "Newly added" strip (latest community songs with contributor), then the numbered list with deity-coloured cards. The extras only show on the unfiltered home view. Reader shows "Listen on YouTube" for songs with a link.
+## Home page and navigation
+- Compact by owner preference (no big hero). Header: brand, ♡ Favorites (count badge), 🕘 Recently viewed (both toggle their view), "+ Submit". There is no left menu any more.
+- Below the search: type tabs Bhajan / Aarti / Chanting / Mantra / All with counts (default Bhajan; Chalisa and Sundarkand appear under All), deity quick-pick chips, compact "Aaj ka Bhajan" (changes daily) and "Newly added" strip, then the A-Z list with deity-coloured cards and a "New" badge for 30 days.
+- Search, Favorites and Recent ignore the type tab (they look across all types). Recently Viewed is in time order without letter headings.
+- "Chanting" = naam-jaap / dhun / kirtan where one or two lines of divine names repeat many times (e.g. "Hare Rama Hare Krishna", "Shri Krishna Govind Hare Murari"). Gemini is told this definition. No built-in song is labelled Chanting yet.
+- Reader shows "Listen on YouTube" for songs with a link.
 
 ## Gotchas
 - Git Bash: heredocs and `node -e` in this environment can drop backslashes; write files containing regexes with the editor tools, then verify. With `MSYS_NO_PATHCONV=1`, use `-o NUL` instead of `/dev/null` for curl.
