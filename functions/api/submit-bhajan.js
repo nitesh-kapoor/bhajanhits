@@ -132,10 +132,15 @@ Respond ONLY with valid raw JSON. Do not include markdown code block formatting 
 
     if (!geminiRes.ok) {
       const busy = isBusy(geminiRes.status);
+      let googleReason = '';
+      try { googleReason = JSON.parse(lastErrText)?.error?.status || ''; } catch (e) {}
+      const detail = ` (${geminiRes.status}${googleReason ? ' ' + googleReason : ''})`;
       return new Response(JSON.stringify({
         status: 'error',
-        error: busy
-          ? 'The AI checking service is very busy right now. Please wait a minute and try again. Nothing was saved.'
+        error: geminiRes.status === 429
+          ? 'The AI checking service has reached its usage limit. Please try again later. Nothing was saved.' + detail
+          : busy
+          ? 'The AI checking service is very busy right now. Please wait a minute and try again. Nothing was saved.' + detail
           : `AI verification failed (${geminiRes.status}): ${lastErrText.slice(0, 500)}`
       }), { status: busy ? 503 : 502, headers: corsHeaders });
     }
