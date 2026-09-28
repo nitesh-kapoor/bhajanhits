@@ -95,15 +95,16 @@ Respond ONLY with valid raw JSON. Do not include markdown code block formatting 
 
     contents.push({ parts });
 
-    // 3. Call Gemini 2.5 Flash API
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    // 3. Call Gemini API (override the model with a GEMINI_MODEL env var when Google retires one)
+    const model = context.env?.GEMINI_MODEL || 'gemini-3.8-flash';
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
     const geminiRes = await fetch(geminiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents,
         generationConfig: {
-          temperature: 0.1,
+          // No temperature override: Google advises the default for Gemini 3 models (low values can loop).
           responseMimeType: "application/json"
         }
       })
