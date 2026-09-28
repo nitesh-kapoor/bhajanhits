@@ -38,6 +38,22 @@ export async function onRequestPost(context) {
       }), { status: 500, headers: corsHeaders });
     }
 
+    // 0. Cheap checks on pasted text before calling the AI: they save Gemini quota and still work
+    //    when Google is busy. The same checks run again on the AI's formatted output below.
+    if (!isImage) {
+      const early = spamProblem([lyricsText, contributorName, contributorLocation].join('\n'));
+      const kvEarly = context.env?.BHAJAN_SUBMISSIONS;
+      const earlyDuplicate = early ? null : findDuplicate(
+        { hindi: lyricsText, roman: lyricsText }, await loadBuiltInIndex(context),
+        kvEarly ? (await kvEarly.get('submissions', { type: 'json' }) || []) : [], { titles: false });
+      if (early || earlyDuplicate) {
+        return new Response(JSON.stringify({
+          status: 'rejected',
+          reason: early || duplicateReason(earlyDuplicate)
+        }), { status: 200, headers: corsHeaders });
+      }
+    }
+
     // 1. Build prompt for Gemini Guardrail & Extraction
     const systemPrompt = `You are a reverent devotional archivist for "Bhakti Bhajan Sangrah", a Hindu devotional website created with devotion by Nitesh Kapoor.
 
@@ -250,9 +266,7 @@ Respond ONLY with valid raw JSON. Do not include markdown code block formatting 
     if (duplicateOf) {
       return new Response(JSON.stringify({
         status: 'rejected',
-        reason: duplicateOf === true
-          ? 'This bhajan (or a very similar version) is already in the collection. Thank you for your devotion!'
-          : `This bhajan is already in the collection as "${duplicateOf}". Thank you for your devotion!`
+        reason: duplicateReason(duplicateOf)
       }), { status: 200, headers: corsHeaders });
     }
 
@@ -333,18 +347,25 @@ function songKeys(song) {
 }
 
 // Returns the matching title, true (match with unknown title) or null.
-function findDuplicate(entry, builtIn, submissions) {
+// { titles: false } compares lyrics only (used on raw pasted text, which has no title yet).
+function findDuplicate(entry, builtIn, submissions, { titles = true } = {}) {
   const k = songKeys(entry);
-  if (builtIn.slugs.has(k.slug)) return entry.titleEn;
-  if (k.hiTitle.length >= 4 && builtIn.hiTitles.has(k.hiTitle)) return entry.titleHi || true;
+  const titleMatch = o => titles && (o.slug === k.slug || (k.hiTitle.length >= 4 && o.hiTitle === k.hiTitle));
+  if (titles && builtIn.slugs.has(k.slug)) return entry.titleEn;
+  if (titles && k.hiTitle.length >= 4 && builtIn.hiTitles.has(k.hiTitle)) return entry.titleHi || true;
   for (const doc of builtIn.docs) {
     if (similar(doc.kind === 'hindi' ? k.hindi : k.roman, doc.grams)) return doc.title || true;
   }
   for (const s of submissions) {
     const o = songKeys(s);
-    if (o.slug === k.slug || (k.hiTitle.length >= 4 && o.hiTitle === k.hiTitle) || similar(k.hindi, o.hindi) || similar(k.roman, o.roman)) return s.titleEn || true;
+    if (titleMatch(o) || similar(k.hindi, o.hindi) || similar(k.roman, o.roman)) return s.titleEn || true;
   }
   return null;
+}
+function duplicateReason(match) {
+  return match === true
+    ? 'This bhajan (or a very similar version) is already in the collection. Thank you for your devotion!'
+    : `This bhajan is already in the collection as "${match}". Thank you for your devotion!`;
 }
 
 // Fingerprints of the built-in data.js collection, cached for the life of the isolate
@@ -396,16 +417,8 @@ async function buildBuiltInIndex(context) {
 
 // ---- Content checks that do not rely on the AI ---------------------------
 function contentProblem({ titleEn, titleHi, hindi, roman, desc, name, location }) {
-  const everything = [titleEn, titleHi, hindi, roman, desc, name, location].join('\n');
-  if (/[^\s@]+@[^\s@]+\.[a-z]{2,}/i.test(everything)) {
-    return 'Email addresses are not allowed in bhajan submissions.';
-  }
-  if (/https?:\/\/|www\.|\b[a-z0-9-]{2,}\.(com|net|org|info|xyz|ly|io|app|link|shop|site|online|biz|co\.in|org\.in)\b/i.test(everything)) {
-    return 'Links and website addresses are not allowed in bhajan submissions.';
-  }
-  if (/(?:\+?\d[\s-]?){10,}/.test(everything)) {
-    return 'Phone numbers are not allowed in bhajan submissions.';
-  }
+  const spam = spamProblem([titleEn, titleHi, hindi, roman, desc, name, location].join('\n'));
+  if (spam) return spam;
   if (!/^[\p{L}\p{M}\s.,'’()&-]*$/u.test(name) || !/^[\p{L}\p{M}\s.,'’()&-]*$/u.test(location)) {
     return 'Please use only letters in your name and city.';
   }
@@ -417,6 +430,20 @@ function contentProblem({ titleEn, titleHi, hindi, roman, desc, name, location }
   const romanLatin = count(roman, /[a-z]/gi), romanDev = count(roman, /[ऀ-ॿ]/g);
   if (romanLatin < 40 || romanDev > romanLatin * 0.1) {
     return 'The Romanized lyrics could not be prepared correctly. Please try again with a clearer photo or more of the lyrics.';
+  }
+  return null;
+}
+
+// Emails, links and phone numbers are never part of a bhajan; they usually mean spam.
+function spamProblem(everything) {
+  if (/[^\s@]+@[^\s@]+\.[a-z]{2,}/i.test(everything)) {
+    return 'Email addresses are not allowed in bhajan submissions.';
+  }
+  if (/https?:\/\/|www\.|\b[a-z0-9-]{2,}\.(com|net|org|info|xyz|ly|io|app|link|shop|site|online|biz|co\.in|org\.in)\b/i.test(everything)) {
+    return 'Links and website addresses are not allowed in bhajan submissions.';
+  }
+  if (/(?:\+?\d[\s-]?){10,}/.test(everything)) {
+    return 'Phone numbers are not allowed in bhajan submissions.';
   }
   return null;
 }
