@@ -95,31 +95,56 @@ Respond ONLY with valid raw JSON. Do not include markdown code block formatting 
 
     contents.push({ parts });
 
-    // 3. Call Gemini API (override the model with a GEMINI_MODEL env var when Google retires one)
-    const model = context.env?.GEMINI_MODEL || 'gemini-3.8-flash';
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
-    const geminiRes = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents,
-        generationConfig: {
-          // No temperature override: Google advises the default for Gemini 3 models (low values can loop).
-          responseMimeType: "application/json"
-        }
-      })
+    // 3. Call Gemini API. Models can be changed with GEMINI_MODEL / GEMINI_FALLBACK_MODEL env vars
+    //    when Google retires one. Busy/overloaded responses are retried, then the fallback model is tried.
+    const models = [...new Set([
+      context.env?.GEMINI_MODEL || 'gemini-3.8-flash',
+      context.env?.GEMINI_FALLBACK_MODEL || 'gemini-3.5-flash'
+    ])];
+    const requestBody = JSON.stringify({
+      contents,
+      generationConfig: {
+        // No temperature override: Google advises the default for Gemini 3 models (low values can loop).
+        responseMimeType: "application/json"
+      }
     });
+    const isBusy = status => status === 429 || status === 500 || status === 503 || status === 504;
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    let geminiRes = null;
+    let lastErrText = '';
+    attempts:
+    for (const model of models) {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        if (geminiRes) await sleep(1500 * attempt + 500);
+        geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: requestBody
+        });
+        if (geminiRes.ok) break attempts;
+        lastErrText = await geminiRes.text();
+        console.error(`Gemini ${model} attempt ${attempt + 1} failed (${geminiRes.status}): ${lastErrText.slice(0, 300)}`);
+        if (geminiRes.status === 404) continue attempts; // model retired or unknown: try the next one
+        if (!isBusy(geminiRes.status)) break attempts;
+      }
+    }
 
     if (!geminiRes.ok) {
-      const errText = await geminiRes.text();
+      const busy = isBusy(geminiRes.status);
       return new Response(JSON.stringify({
         status: 'error',
-        error: `AI verification failed (${geminiRes.status}): ${errText}`
-      }), { status: 502, headers: corsHeaders });
+        error: busy
+          ? 'The AI checking service is very busy right now. Please wait a minute and try again. Nothing was saved.'
+          : `AI verification failed (${geminiRes.status}): ${lastErrText.slice(0, 500)}`
+      }), { status: busy ? 503 : 502, headers: corsHeaders });
     }
 
     const geminiJson = await geminiRes.json();
-    const rawAiOutput = geminiJson?.candidates?.[0]?.content?.parts?.[0]?.text;
+    // Join the answer's text parts, skipping any "thought" parts that thinking models may include.
+    const rawAiOutput = (geminiJson?.candidates?.[0]?.content?.parts || [])
+      .filter(p => typeof p.text === 'string' && !p.thought)
+      .map(p => p.text).join('') || null;
     if (!rawAiOutput) {
       return new Response(JSON.stringify({ status: 'error', error: 'Empty response from AI.' }), { status: 502, headers: corsHeaders });
     }
