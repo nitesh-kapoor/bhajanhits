@@ -80,7 +80,14 @@ TASK:
    - Classify the deity strictly from one of these:
      ["Lord Krishna", "Lord Shiva", "Durga Maa", "Lord Rama", "Lord Hanuman", "Lord Ganesha", "Sai Baba", "Saraswati Maa", "Lakshmi Maa", "Santoshi Maa", "Lord Vishnu", "Surya Dev", "Khatu Shyam Ji", "Guru & Family", "Multiple Deities"]
    - Classify the type strictly from one of these:
-     ["Bhajan", "Aarti", "Chalisa", "Mantra", "Sundarkand"]
+     ["Bhajan", "Aarti", "Chanting", "Mantra", "Chalisa", "Sundarkand"]
+     * Bhajan: a devotional song with verses/stanzas and usually a refrain.
+     * Aarti: a hymn sung while offering the aarti lamp (e.g. "Om Jai Jagdish Hare", "Jai Ganesh Deva").
+     * Chanting: naam-jaap, dhun or kirtan where one or two short lines of divine names are repeated many times
+       (e.g. "Hare Rama Hare Rama, Rama Rama Hare Hare, Hare Krishna Hare Krishna, Krishna Krishna Hare Hare",
+       "Shri Krishna Govind Hare Murari, He Nath Narayan Vasudeva", "Om Namah Shivaya" sung as a dhun).
+     * Mantra: a Sanskrit mantra, shloka, stuti or prarthana that is recited (e.g. Gayatri Mantra, Saraswati Vandana).
+     * Chalisa: a 40-verse hymn such as Hanuman Chalisa. Sundarkand: passages of the Sundarkand.
 
    Return JSON format:
    {
@@ -270,6 +277,13 @@ Respond ONLY with valid raw JSON. Do not include markdown code block formatting 
       }), { status: 200, headers: corsHeaders });
     }
 
+    // Permanent song number: the next after the highest in use. The original data.js collection is
+    // numbered 1-65 in app.js; older submissions saved before numbers existed are numbered first, in
+    // submission order, exactly as app.js already displays them.
+    let topNumber = Math.max(LAST_BUILTIN_NUMBER, ...submissions.map(s => Number.isInteger(s.no) ? s.no : 0));
+    submissions.filter(s => !Number.isInteger(s.no)).sort((a, b) => a.id - b.id).forEach(s => { s.no = ++topNumber; });
+    newEntry.no = ++topNumber;
+
     submissions.push(newEntry);
     await kv.put('submissions', JSON.stringify(submissions));
 
@@ -300,7 +314,8 @@ export async function onRequestOptions() {
 }
 
 const ALLOWED_DEITIES = ["Lord Krishna", "Lord Shiva", "Durga Maa", "Lord Rama", "Lord Hanuman", "Lord Ganesha", "Sai Baba", "Saraswati Maa", "Lakshmi Maa", "Santoshi Maa", "Lord Vishnu", "Surya Dev", "Khatu Shyam Ji", "Guru & Family", "Multiple Deities"];
-const ALLOWED_TYPES = ["Bhajan", "Aarti", "Chalisa", "Mantra", "Sundarkand"];
+const ALLOWED_TYPES = ["Bhajan", "Aarti", "Chanting", "Mantra", "Chalisa", "Sundarkand"];
+const LAST_BUILTIN_NUMBER = 65; // highest permanent number in app.js fixedNumbers (original collection)
 
 // Same slug rule as app.js, so duplicate checks match the site's URLs.
 function titleSlug(title) {
