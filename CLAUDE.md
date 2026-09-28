@@ -21,7 +21,7 @@ Static devotional-song website (Hindi lyrics + Romanized Hindi) with AI-checked 
 - `index.html`, `style.css`: UI. CSS has many later overrides; new rules are appended at the end.
 - `data.js`: `categories` and `bhajans` (65 built-in songs, ids 101-165), plus later `bhajans.push(...)` blocks and a `romanizedUpdates` map. UTF-8 with Devanagari and emoji; do not reformat.
 - `app.js`: client logic (numbering, search, filters, favorites, reader, home extras, submit dialog). Plain script, no modules; check with `node --check app.js`.
-- `sw.js`: network-first cache `bbs-static-vNN`. Bump NN whenever a cached asset changes.
+- `sw.js`: network-first cache `bbs-static-vNN`. Bump NN whenever a cached asset changes, AND update the matching `?v=NN` on `style.css`, `data.js` and `app.js` in index.html (the deploy fails if they differ). Reason: the bhajanhits.com zone serves JS/CSS with `max-age=14400` (4 h) while HTML is `max-age=0`; without the version query, phones paired new HTML with an old app.js and showed an empty list (2026-09-28).
 - `functions/api/submit-bhajan.js`: POST /api/submit-bhajan (Gemini guardrail + formatting, then KV save).
 - `functions/api/bhajans.js`: GET /api/bhajans (community songs from KV, `Cache-Control: public, max-age=30`).
 
