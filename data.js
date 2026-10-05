@@ -1,10 +1,11 @@
 const categories=[
-['🙏','Lord Ganesha','गणेश जी'],['🔱','Lord Shiva','शिव जी'],['🏹','Lord Rama','राम जी'],['🚩','Lord Hanuman','हनुमान जी'],['🪈','Lord Krishna','कृष्ण जी'],['🌸','Radha Rani','राधा रानी'],['🪷','Durga Maa','दुर्गा माँ'],['🪔','Lakshmi Maa','लक्ष्मी माँ'],['🦚','Saraswati Maa','सरस्वती माँ'],['📿','Sai Baba','साईं बाबा'],['☀️','Surya Dev','सूर्य देव'],['🛕','Khatu Shyam Ji','खाटू श्याम जी']];
+['🙏','Lord Ganesha','गणेश जी'],['🔱','Lord Shiva','शिव जी'],['🏹','Lord Rama','राम जी'],['🚩','Lord Hanuman','हनुमान जी'],['🪈','Lord Krishna','कृष्ण जी'],['🌸','Radha Rani','राधा रानी'],['🪷','Durga Maa','दुर्गा माँ'],['🪔','Lakshmi Maa','लक्ष्मी माँ'],['🦚','Saraswati Maa','सरस्वती माँ'],['📿','Sai Baba','साईं बाबा'],['☀️','Surya Dev','सूर्य देव'],['🛕','Khatu Shyam Ji','खाटू श्याम जी'],['🐚','Lord Vishnu','विष्णु जी'],['🌺','Santoshi Maa','संतोषी माँ'],['🙇','Guru & Family','गुरु और परिवार']];
 
 // Every song, in permanent-number order (numbers never change or get reused; 67, 90 and 94 were
 // duplicates and are retired). lyrics: "full" = traditional / folk text shown in full;
 // "partial" = copyrighted song, only the opening lines are kept here and the reader links to the
-// full lyrics elsewhere. yt = YouTube video id embedded in the reader ("" = none).
+// full lyrics elsewhere. yt = YouTube video id embedded in the reader ("" = none); ytLyrics = an
+// official lyrics video for a partial song (words shown on screen), offered as a second tab.
 // New songs added by hand need the next free number above the highest one in use.
 const bhajans=[
 {id:142,no:1,titleEn:"Aarti Kunj Bihari Ki",titleHi:"आरती कुंजबिहारी की",god:"Lord Krishna",godHi:"",type:"Aarti",lyrics:"full",yt:"EMO1AT1UQf0",desc:"Transcribed from the supplied collection. Printed wording and repetitions retained; Romanized pronunciation added from the Hindi text.",source:"Your collection • Aarti-Sangrah.pdf, pages 22–23 • Shri Hindu Dharma Vedic Education Foundation, www.shdvef.com",
@@ -155,17 +156,27 @@ Aayi hai meri maiya solah shringar karke`},
 
 {id:115,no:3,titleEn:"Achyutam Keshavam",titleHi:"",god:"Lord Krishna",godHi:"",type:"Bhajan",lyrics:"partial",yt:"yk-Y2jJeBqk",desc:"Romanized lyrics from the supplied PDF. Columns read top to bottom, then left to right. Source spelling and repetition cues preserved. No Hindi lyrics were supplied.",source:"Your collection • bahajans-lyrcis.pdf, page 1",
 hindi:``,
-roman:`Achyutam Keshavam Krishna Damodaram`},
+roman:`Achyutam Keshavam Krishna Damodaram
+
+Rama Naraynam Janaki Vallabham
+
+Kaun Kehta Hai Bhagvan Aate Nahi
+
+Tum Meera Ke Jaise Bulate Nahi
+
+Achyutam Keshavam Krishna Damodaram`},
 
 {id:117,no:4,titleEn:"Aisi Lagi Lagan",titleHi:"ऐसी लागी लगन",god:"Lord Krishna",godHi:"",type:"Bhajan",lyrics:"partial",yt:"dnCE-kSHES0",desc:"Transcribed from the supplied PDF, preserving its wording and repeated lines. Romanized pronunciation added from the Hindi text.",source:"Your collection • bahajans-lyrcis.pdf, page 3",
 hindi:`है आँख वो जो श्याम का दर्शन किया करे
 है शीश, जो प्रभु चरण में वंदन किया करे
 बेकार वो मुख है जो रहे व्यर्थ बातों में
-मुख वो है जो हरि नाम का सुमिरन किया करे`,
+मुख वो है जो हरि नाम का सुमिरन किया करे
+हीरे-मोती से नहीं शोभा है हाथ की`,
 roman:`Hai aankh vo jo shyaam ka darshan kiyaa kare
 Hai sheesh, jo prabhu charan mein vandan kiyaa kare
 Bekaar vo mukh hai jo rahe vyarth baaton mein
-Mukh vo hai jo hari naam ka sumiran kiyaa kare`},
+Mukh vo hai jo hari naam ka sumiran kiyaa kare
+Heere-motee se nahin shobhaa hai haath ki`},
 
 {id:157,no:5,titleEn:"Ambe Maa Aisa Var Dijiye",titleHi:"अंबे मां ऐसा वर दीजिए",god:"Durga Maa",godHi:"",type:"Bhajan",lyrics:"full",yt:"GQJx1AzJPyE",desc:"Transcribed from the supplied image; repetition cues retained. Romanized pronunciation added from the Hindi text.",source:"Your WhatsApp image collection • 1.24.59 AM (3)",
 hindi:`अंबे मां — ३ ऐसा वर दीजिए
@@ -381,9 +392,17 @@ O maiya hum sab utaare teri aarti|`},
 
 {id:148,no:8,titleEn:"Bada Pyara Saja Hai Tera Dwar Bhawani",titleHi:"बड़ा प्यारा सजा है तेरा द्वार भवानी",god:"Durga Maa",godHi:"",type:"Bhajan",lyrics:"partial",yt:"ebWlUm0FmvU",desc:"Visible song verses transcribed. The unrelated blue quotation above the song and page credits are excluded. Romanized pronunciation added from the Hindi text.",source:"Your WhatsApp image collection • 1.25.00 AM (7)",
 hindi:`बड़ा प्यारा सजा है तेरा द्वार भवानी
-जहाँ भक्तों की लगी है कतार भवानी`,
+जहाँ भक्तों की लगी है कतार भवानी
+
+ऊँचे पर्वत भवन निराला
+आ के शीश निवाये संसार भवानी
+प्यारा सजा है तेरा द्वार भवानी`,
 roman:`Bada pyaaraa sajaa hai teraa dwaar bhawani
-Jahaan bhakton ki lagee hai kataar bhawani`},
+Jahaan bhakton ki lagee hai kataar bhawani
+
+Oonche parvat bhawan niraalaa
+Aa ke sheesh nivaaye sansaar bhawani
+Pyaaraa sajaa hai teraa dwaar bhawani`},
 
 {id:109,no:9,titleEn:"Bhajan Medley",titleHi:"",god:"Multiple Deities",godHi:"",type:"Bhajan",deities:["Lord Rama","Lord Krishna","Lord Hanuman","Radha Rani","Sai Baba","Lord Shiva"],lyrics:"full",yt:"IOxa17VWzDc",desc:"A continuous singing medley, in the original sequence. Includes short devotional excerpts and repeated Ram refrains; these are not complete standalone versions. Original spellings and repetition cues are preserved.",source:"Your collection • Bhajan-Medley (2).pdf, pages 1–3",
 hindi:``,
@@ -550,21 +569,43 @@ Dekh kar shringar maa ka dil deewana ho gayaa…`},
 {id:102,no:11,titleEn:"Duniya Chale Na Shri Ram Ke Bina",titleHi:"दुनिया चले ना श्री राम के बिना",god:"Lord Hanuman",godHi:"हनुमान जी",type:"Bhajan",lyrics:"partial",yt:"sDhrWWWBQLI",desc:"A Ram–Hanuman bhajan from your personal collection.",source:"Your Bhajan Collection • PDF pp. 5–6",
 hindi:``,
 roman:`Duniya chale na Shri Ram ke bina
-Ramji chale na Hanuman ke bina`},
+Ramji chale na Hanuman ke bina
+
+Jab se Ramayan padh li hai
+Ek baat maine samajh li hai
+Ravan mare na Shri Ram ke bina`},
 
 {id:161,no:12,titleEn:"Duniya Rachne Wale Ko Bhagwan Kehte Hain",titleHi:"दुनिया रचने वाले को भगवान कहते हैं",god:"Lord Hanuman",godHi:"",type:"Bhajan",lyrics:"partial",yt:"KHseWZW92U0",desc:"Supplied wording and all chorus responses retained. Romanized pronunciation added from the Hindi text.",source:"Lyrics supplied directly by the collection owner",
 hindi:`दुनिया रचने वाले को भगवान कहते हैं
 (दुनिया रचने वाले को भगवान कहते हैं)
 और संकट हरने वाले को हनुमान कहते हैं
-(संकट हरने वाले को हनुमान कहते हैं)`,
+(संकट हरने वाले को हनुमान कहते हैं)
+दुनिया रचने वाले को भगवान कहते हैं`,
 roman:`Duniya rachne waale ko bhagwan kehte hain
 (duniya rachne waale ko bhagwan kehte hain)
 Aur sankat harne waale ko hanuman kehte hain
-(sankat harne waale ko hanuman kehte hain)`},
+(sankat harne waale ko hanuman kehte hain)
+Duniya rachne waale ko bhagwan kehte hain`},
 
 {id:111,no:13,titleEn:"Ganpati Ki Jai Jaikar",titleHi:"गणपति की जय जयकार",god:"Lord Ganesha",godHi:"गणेश जी",type:"Bhajan",lyrics:"partial",yt:"e2qcwS2lSww",desc:"Counting bhajan (1–20), transcribed from the supplied screenshot. The Hindi line for 9–12 includes two alternatives; the supplied Romanized version includes only “sabse pyaare”.",source:"Your collection • Supplied Ganpati counting-bhajan screenshot",
-hindi:`1, 2, 3, 4 – गणपति की जय जयकार`,
-roman:`Ek, do, teen, char – Ganpati ki jai jaikar`},
+hindi:`1, 2, 3, 4 – गणपति की जय जयकार
+
+5, 6, 7, 8 – गणपति हमारे साथ
+
+9, 10, 11, 12 – गणपति हैं सबसे प्यारे / सब से न्यारे
+
+13, 14, 15, 16 – गणपति सबसे भोला
+
+17, 18, 19, 20 – आओ मिलकर बोलो बप्पा की जय`,
+roman:`Ek, do, teen, char – Ganpati ki jai jaikar
+
+Paanch, chey, saat, aath – Ganpati hamare saath
+
+Nau, das, gyarah, barah – Ganpati hain sabse pyaare
+
+Terah, choudah, pandrah, solah – Ganpati sabse bhola
+
+Satrah, athrah, unnis, bees – Aao milkar bolo Bappa ki jai`},
 
 {id:130,no:14,titleEn:"Hanuman Ji Ki Aarti",titleHi:"हनुमान आरती",god:"Lord Hanuman",godHi:"हनुमान जी",type:"Aarti",lyrics:"full",yt:"DUNYVi_YOq8",desc:"Supplied Hindi wording and repetitions retained. Citation markers and Markdown formatting removed from singing text. Romanized pronunciation added from the Hindi text.",source:"Lyrics supplied directly by the collection owner • References supplied: Navbharat Times and Bhakti Bharat",
 hindi:`आरती कीजै हनुमान लला की।
@@ -702,7 +743,10 @@ Aarti keejai hanuman lalaa ki| dusht dalan raghunaath kalaa ki||`},
 hindi:``,
 roman:`Hey dukh bhanjan Maruti Nandan,
 Sun lo meri pukar,
-Pawansut vinti baarambaar.`},
+Pawansut vinti baarambaar.
+
+Asht siddhi nav nidhi ke data,
+Dukhiyon ke tum bhagya vidhata,`},
 
 {id:159,no:17,titleEn:"Hum To Chale Aaye Deva Tumko Manane",titleHi:"हम तो चले आये देवा तुमको मनाने",god:"Lord Ganesha",godHi:"",type:"Bhajan",lyrics:"full",yt:"_6ej_Z-Kelo",desc:"Transcribed from the supplied image; repetition cues retained. Romanized pronunciation added from the Hindi text.",source:"Your WhatsApp image collection • 1.24.59 AM (1) and 1.24.59 AM",
 hindi:`हम तो चले आये देवा तुमको मनाने
@@ -960,38 +1004,70 @@ Om jai shiv omkara`},
 
 {id:146,no:21,titleEn:"Jatadhari Banke Tripurari Banke",titleHi:"जटाधारी बनके त्रिपुरारी बनके",god:"Lord Shiva",godHi:"",type:"Bhajan",lyrics:"partial",yt:"FOrmYdz95CI",desc:"Transcribed from the supplied image; repetition cues retained. Romanized pronunciation added from the Hindi text.",source:"Your WhatsApp image collection • 1.25.00 AM (10) and (9)",
 hindi:`जटाधारी बनके, त्रिपुरारी बनके
-चले आना भोले जी चले आना।`,
+चले आना भोले जी चले आना।
+
+तुम जोगिया रूप में आना
+नंदी साथ लेके
+डमरू हाथ लेके, चले आना…`,
 roman:`Jataadhaaree banke, tripuraaree banke
-Chale aanaa bhole ji chale aanaa|`},
+Chale aanaa bhole ji chale aanaa|
+
+Tum jogiyaa roop mein aanaa
+Nandee saath leke
+Damroo haath leke, chale aanaa…`},
 
 {id:164,no:22,titleEn:"Jhoom Jhoom Nache Dekho Bhakt Hanumana",titleHi:"झूम झूम नाचे देखो भक्त हनुमाना",god:"Lord Hanuman",godHi:"",type:"Bhajan",lyrics:"partial",yt:"KnXKOQWJ03k",desc:"Both supplied lyric versions preserved; Markdown formatting removed.",source:"Hindi and English transliteration supplied directly by the collection owner",
 hindi:`झूम झूम नाचे देखो भक्त हनुमाना,
 बाजे खड़ताल करे राम गुण गाना,
-झूम झूम नाचे देखो वीर हनुमाना ॥`,
+झूम झूम नाचे देखो वीर हनुमाना ॥
+
+राम धुन में मस्त मगन है,
+राम से लागी लागी इनकी लगन है,`,
 roman:`Jhoom jhoom nache dekho bhakt hanumana,
 Baje khadtal kare ram gun gana,
-Jhoom jhoom nache dekho veer hanumana.`},
+Jhoom jhoom nache dekho veer hanumana.
+
+Ram dhun me mast magan hai,
+Ram se lagi lagi inki lagan hai,`},
 
 {id:120,no:23,titleEn:"Kabhi Pyase Ko Pani Pilaya Nahin",titleHi:"कभी प्यासे को पानी पिलाया नहीं",god:"Guru & Family",godHi:"",type:"Bhajan",lyrics:"partial",yt:"OeMGwKQNhWs",desc:"Transcribed from the supplied PDF, preserving its wording and repeated lines. Romanized pronunciation added from the Hindi text.",source:"Your collection • bahajans-lyrcis.pdf, page 7",
 hindi:`कभी प्यासे को पानी पिलाया नहीं, बाद अमृत पिलाने से क्या फायदा।
-कभी गिरते हुए को उठाया नहीं, बाद आंसू बहाने से क्या फायदा॥`,
+कभी गिरते हुए को उठाया नहीं, बाद आंसू बहाने से क्या फायदा॥
+
+मैं तो मंदिर गया, पूजा आरती की, पूजा करते हुए यह ख़याल आ गया।
+कभी माँ बाप की सेवा की ही नहीं, सिर्फ पूजा के करने से क्या फायदा॥
+
+मैं तो सतसंग गया, गुरु वाणी सुनी, गुरु वाणी को सुन कर ख्याल आ गया।`,
 roman:`Kabhee pyaase ko paanee pilaayaa nahin, baad amrit pilaane se kyaa faayda|
-Kabhee girte hue ko uthaayaa nahin, baad aansoo bahaane se kyaa faayda||`},
+Kabhee girte hue ko uthaayaa nahin, baad aansoo bahaane se kyaa faayda||
+
+Main to mandir gayaa, poojaa aarti ki, poojaa karte hue yah khayaal aa gayaa|
+Kabhee maa baap ki sevaa ki hi nahin, sirf poojaa ke karne se kyaa faayda||
+
+Main to satsang gayaa, guru vaanee sunee, guru vaanee ko sun kar khyaal aa gayaa|`},
 
 {id:145,no:24,titleEn:"Kal Raat Mata Ka Mujhe Email Aaya Hai",titleHi:"कल रात माता का मुझे ईमेल आया है",god:"Durga Maa",godHi:"",type:"Bhajan",lyrics:"partial",yt:"YDVBvR_5EJU",desc:"Romanized lyrics supplied by the collection owner; repetitions and performance cues preserved. No Hindi lyrics supplied.",source:"Lyrics supplied directly by the collection owner",
 hindi:``,
 roman:`Kal raat mata ka mujhe email aaya hai
-Kal raat mata ka mujhe email aaya hai
 Mata ne mujhko..
-Mata ne mujhko Facebook pe bulaya hai`},
+Mata ne mujhko Facebook pe bulaya hai
+Kal raat mata ka mujhe Email aaya hai
+
+Chatting shatting karenge`},
 
 {id:160,no:25,titleEn:"Keejo Kesari Ke Lal",titleHi:"कीजो केसरी के लाल",god:"Lord Hanuman",godHi:"",type:"Bhajan",lyrics:"partial",yt:"b5FUADElUC8",desc:"Supplied wording, chorus responses and repetitions preserved. Romanized pronunciation added from the Hindi text.",source:"Lyrics supplied directly by the collection owner",
 hindi:`हो, कीजो, केसरी के लाल, मेरा छोटा सा ये काम
 कीजो, केसरी के लाल, मेरा छोटा सा ये काम
-हो, मेरी राम जी कह देना, जय सिया-राम (जय श्री राम)`,
+हो, मेरी राम जी कह देना, जय सिया-राम (जय श्री राम)
+
+कीजो, केसरी के लाल, मेरा छोटा सा ये काम
+हो, मेरी राम जी कह देना, जय सिया-राम`,
 roman:`Ho, keejo, kesari ke laal, mera chhotaa saa ye kaam
 Keejo, kesari ke laal, mera chhotaa saa ye kaam
-Ho, meri raam ji keh denaa, jai siyaa-raam (jai shri raam)`},
+Ho, meri raam ji keh denaa, jai siyaa-raam (jai shri raam)
+
+Keejo, kesari ke laal, mera chhotaa saa ye kaam
+Ho, meri raam ji keh denaa, jai siyaa-raam`},
 
 {id:113,no:26,titleEn:"Kitni Sundar Hai Maa Teri Nagri",titleHi:"कितनी सुंदर है मां तेरी नगरी",god:"Lord Shiva",godHi:"शिव जी",type:"Bhajan",deities:["Lord Shiva","Durga Maa"],lyrics:"full",yt:"vIAci-RsMWw",desc:"Visible Hindi verses from the supplied screenshot. The final repeated refrain is partly covered by social-media controls and is omitted. No missing text or Romanized version has been invented. Romanized pronunciation added from the Hindi text.",source:"Your collection • Supplied screenshot shared by Poonam Devi",
 hindi:`कितनी सुंदर है मां तेरी नगरी
@@ -1084,10 +1160,16 @@ Hoke nandee savaar maiya tere mandir mein
 {id:131,no:28,titleEn:"Maa Murade Puri Karde Halwa Batungi",titleHi:"माँ मुरादे पूरी करदे हलवा बाटूंगी",god:"Durga Maa",godHi:"",type:"Bhajan",lyrics:"partial",yt:"HkzOl-eZu54",desc:"Transcribed from the supplied collection. Printed wording and repetitions retained; Romanized pronunciation added from the Hindi text.",source:"Lyrics supplied directly by the collection owner",
 hindi:`माँ मुरादे पूरी करदे हलवा बाटूंगी।
 ज्योत जगा के, सर को झुका के,
-मैं मनाऊंगी, दर पे आउंगी, मनाऊंगी, मैं आउंगी॥`,
+मैं मनाऊंगी, दर पे आउंगी, मनाऊंगी, मैं आउंगी॥
+
+संतो महंतो को बुला के घर में कराऊं जगराता।
+सुनती है सब की फ़रिआदे, मेरी भी सुन लेगी माता।`,
 roman:`Maa muraade pooree karde halvaa baatoongee|
 Jyot jagaa ke, sar ko jhukaa ke,
-Main manaaoongee, dar pe aaungi, manaaoongee, main aaungi||`},
+Main manaaoongee, dar pe aaungi, manaaoongee, main aaungi||
+
+Santo mahanto ko bulaa ke ghar mein karaaoon jagraataa|
+Suntee hai sab ki fariaade, meri bhi sun legee maataa|`},
 
 {id:121,no:29,titleEn:"Maat Pita Guru Charnon Mein",titleHi:"मात पिता गुरु चरणों में",god:"Guru & Family",godHi:"",type:"Bhajan",lyrics:"full",yt:"O1tP7dO9nu0",desc:"Transcribed from the supplied PDF, preserving its wording and repeated lines. Romanized pronunciation added from the Hindi text.",source:"Your collection • bahajans-lyrcis.pdf, page 8",
 hindi:`मात पिता गुरु चरणों में प्रणवत बारम्बार,
@@ -1185,11 +1267,15 @@ Main banee patang meri maiya ban gayi dor…`},
 hindi:`मैया का मुखड़ा सुहाना लगता है
 भक्तों का तो दिल दिवाना लगता है
 पल भर में हर लेती है [अंतिम शब्द अस्पष्ट]
-इनसे तो रिश्ता पुराना लगता है।`,
+इनसे तो रिश्ता पुराना लगता है।
+
+लाल जोड़े में सजी है प्यारी सी मैया`,
 roman:`Maiya ka mukhda suhaanaa lagtaa hai
 Bhakton ka to dil diwana lagtaa hai
 Pal bhar mein har letee hai [Source image: line unclear or covered]
-Inse to rishtaa puraanaa lagtaa hai|`},
+Inse to rishtaa puraanaa lagtaa hai|
+
+Laal jode mein sajee hai pyaaree see maiya`},
 
 {id:154,no:32,titleEn:"Maiya Navratron Mein Jab Dharti Par Aati Hai",titleHi:"मैया नवरात्रों में जब धरती पर आती है",god:"Durga Maa",godHi:"",type:"Bhajan",lyrics:"full",yt:"SPbed_yM-Ww",desc:"Visible screenshot text retained. The image ends after the final visible line; no unseen continuation has been added. Romanized pronunciation added from the Hindi text.",source:"Your WhatsApp image collection • 1.25.00 AM",
 hindi:`मैया नवरात्रों में जब धरती पर आती है,
@@ -1325,15 +1411,31 @@ Hum sab manaae maiya ko taalee bajaaee ke`},
 
 {id:149,no:35,titleEn:"Mandir Saja Ke Rakhna",titleHi:"मन्दिर सजा के रखना",god:"Durga Maa",godHi:"",type:"Bhajan",lyrics:"partial",yt:"x5sGDIcFLmU",desc:"Tune note in the poster: Mehndi Laga Ke Rakhna. Duplicate screenshots combined into one entry. Romanized pronunciation added from the Hindi text.",source:"Your WhatsApp image collection • 1.25.00 AM (6) and (5)",
 hindi:`मन्दिर सजा के रखना, दीपक जला के रखना
-आएंगी मेरी मैया चुनरी मंगा के रखना`,
+आएंगी मेरी मैया चुनरी मंगा के रखना
+
+देखो भवानी मैया करे सिंह की सवारी
+डरना नहीं है भक्तों मैया मेरी है प्यारी
+सिर को झुका के रखना अर्जी लगा के रखना`,
 roman:`Mandir sajaa ke rakhnaa, deepak jalaa ke rakhnaa
-Aayengi meri maiya chunari mangaa ke rakhnaa`},
+Aayengi meri maiya chunari mangaa ke rakhnaa
+
+Dekho bhawani maiya kare singh ki savaaree
+Darnaa nahin hai bhakton maiya meri hai pyaaree
+Sir ko jhukaa ke rakhnaa arjee lagaa ke rakhnaa`},
 
 {id:108,no:36,titleEn:"Mangalwar Tera Hai Shanivar Tera Hai",titleHi:"मंगलवार तेरा है शनिवार तेरा है",god:"Lord Hanuman",godHi:"हनुमान जी",type:"Bhajan",lyrics:"partial",yt:"JsUOJpLL70s",desc:"A Balaji/Hanuman bhajan from your personal collection.",source:"Your Bhajan Collection • PDF pp. 27–28",
 hindi:`मंगलवार तेरा है शनिवार तेरा है,
-बजरंगी संभालो परिवार तेरा है।`,
+बजरंगी संभालो परिवार तेरा है।
+
+मंगलवार को मंदिर में आऊँगा मैं,
+शनिवार सिंदूर चढ़ाऊँगा मैं।
+मंगलवार तेरा है शनिवार तेरा है,`,
 roman:`Mangalwar tera hai, Shanivar tera hai,
-Bajrangi sambhalo, parivar tera hai.`},
+Bajrangi sambhalo, parivar tera hai.
+
+Mangalwar ko mandir mein aaunga main,
+Shanivar sindoor chadhaunga main.
+Mangalwar tera hai, Shanivar tera hai,`},
 
 {id:116,no:37,titleEn:"Mera Aapki Kripa Se",titleHi:"",god:"Lord Krishna",godHi:"",type:"Bhajan",lyrics:"full",yt:"NvOqY_ku5UY",desc:"Romanized lyrics from the supplied PDF. Columns read top to bottom, then left to right. Source spelling and repetition cues preserved. No Hindi lyrics were supplied.",source:"Your collection • bahajans-lyrcis.pdf, page 2",
 hindi:``,
@@ -1532,16 +1634,26 @@ Nazar lag jaayegi`},
 
 {id:123,no:39,titleEn:"Mere Ghar Ke Aage Sainath",titleHi:"मेरे घर के आगे साईनाथ",god:"Sai Baba",godHi:"",type:"Bhajan",lyrics:"partial",yt:"6660WPcaPtw",desc:"Transcribed from the supplied PDF, preserving its wording and repeated lines. Romanized pronunciation added from the Hindi text.",source:"Your collection • bahajans-lyrcis.pdf, page 10",
 hindi:`मेरे घर के आगे साईनाथ तेरा मन्दिर बन जाए
-जब खिड़की खोलूँ तो तेरा दर्शन हो जाए`,
+जब खिड़की खोलूँ तो तेरा दर्शन हो जाए
+
+जब आरती हो तेरी मुझे घंटी सुनाई दे
+मुझे रोज़ सवेरे साईनाथ तेरी सूरत दिखाई दे
+जब भजन करे मिलकर रास कानों में घुलजाये`,
 roman:`Mere ghar ke aage sainath teraa mandir ban jaaye
-Jab khidkee kholoon to teraa darshan ho jaaye`},
+Jab khidkee kholoon to teraa darshan ho jaaye
+
+Jab aarti ho teri mujhe ghantee sunaaee de
+Mujhe roz savere sainath teri soorat dikhaaee de
+Jab bhajan kare milkar raas kaanon mein ghuljaaye`},
 
 {id:105,no:40,titleEn:"Mere Ghar Ram Aaye Hain",titleHi:"मेरे घर राम आए हैं",god:"Lord Rama",godHi:"राम जी",type:"Bhajan",lyrics:"partial",yt:"vBJ5HSs-N9o",desc:"A welcoming Lord Rama bhajan from your personal collection.",source:"Your Bhajan Collection • PDF pp. 12–15",
 hindi:``,
 roman:`Meri chaukhat pe chal ke aaj
 Charo dham aaye hain
 Bajao dhol swagat mein
-Mere ghar Ram aaye hain`},
+Mere ghar Ram aaye hain
+
+Katha Shabri ki jaise`},
 
 {id:128,no:41,titleEn:"Mere Kirtan Mein Rang Barsao",titleHi:"मेरे कीर्तन में रंग बरसाओ",god:"Lord Ganesha",godHi:"गणेश जी",type:"Bhajan",lyrics:"full",yt:"Y9PeM3g4ge4",desc:"Hindi lyrics supplied by the collection owner, preserving wording and repetitions. Romanized pronunciation added from the Hindi text.",source:"Your collection • Lyrics supplied directly",
 hindi:`मेरे कीर्तन में रंग बरसाओ,
@@ -1615,25 +1727,45 @@ Aao ji gajaanan aao`},
 
 {id:147,no:42,titleEn:"Meri Ankhiyon Ke Samne Hi Rehna",titleHi:"मेरी अंखियों के सामने ही रहना",god:"Durga Maa",godHi:"",type:"Bhajan",lyrics:"partial",yt:"0diZqEfx6_A",desc:"Transcribed from the supplied image; repetition cues retained. Romanized pronunciation added from the Hindi text.",source:"Your WhatsApp image collection • 1.25.00 AM (8)",
 hindi:`मेरी अंखियों के सामने ही रहना
-ओ शेरों वाली जगदम्बे`,
+ओ शेरों वाली जगदम्बे
+
+हम तो चाकर मैया
+तेरे दरबार के
+हो भूखे हैं हम तो मैया`,
 roman:`Meri ankhiyon ke saamne hi rahnaa
-O sheron waali jagdambe`},
+O sheron waali jagdambe
+
+Hum to chaakar maiya
+Tere darbaar ke
+Ho bhookhe hain hum to maiya`},
 
 {id:107,no:43,titleEn:"Meri Jhopdi Ke Bhaag",titleHi:"मेरी झोपड़ी के भाग",god:"Lord Rama",godHi:"राम जी",type:"Bhajan",lyrics:"partial",yt:"wncNcu6jEgs",desc:"A joyful bhajan celebrating the arrival of Lord Rama.",source:"Your Bhajan Collection • PDF pp. 18–21 (Ram version)",
 hindi:`मेरी झोपड़ी के भाग,
 आज खुल जाएंगे,
 राम आएँगे,
-राम आएँगे आएँगे,`,
+राम आएँगे आएँगे,
+राम आएँगे।`,
 roman:`Meri jhopdi ke bhaag,
 Aaj khul jayenge,
 Ram aayenge,
-Ram aayenge aayenge,`},
+Ram aayenge aayenge,
+Ram aayenge.`},
 
 {id:106,no:44,titleEn:"Nagri Ho Ayodhya Si",titleHi:"नगरी हो अयोध्या सी",god:"Lord Rama",godHi:"राम जी",type:"Bhajan",lyrics:"partial",yt:"WGat6jaSs5k",desc:"A prayer envisioning a home filled with the virtues of Ramayana.",source:"Your Bhajan Collection • PDF pp. 16–17",
 hindi:`लक्ष्मण सा भाई हो, कौशल्या माई हो,
-स्वामी तुम जैसा मेरा रघुराई हो।`,
+स्वामी तुम जैसा मेरा रघुराई हो।
+
+नगरी हो अयोध्या सी, रघुकुल सा घराना हो,
+चरण हो राघव के, जहाँ मेरा ठिकाना हो।
+
+हो त्याग भरत जैसा, सीता सी नारी हो,`,
 roman:`Lakshman sa bhai ho, Kausalya mai ho,
-Swami tum jaisa mera Raghurai ho.`},
+Swami tum jaisa mera Raghurai ho.
+
+Nagri ho Ayodhya si, Raghukul sa gharana ho,
+Charan ho Raghav ke, jahan mera thikana ho.
+
+Ho tyag Bharat jaisa, Sita si nari ho,`},
 
 {id:152,no:45,titleEn:"Odhi Odhi Re Maiya Ji Ne Lal Chunari",titleHi:"ओढ़ी ओढ़ी रे मईया जी ने लाल चुनरी",god:"Durga Maa",godHi:"",type:"Bhajan",lyrics:"full",yt:"L1TvqgwjGuU",desc:"Transcribed from the supplied image; repetition cues retained. Romanized pronunciation added from the Hindi text.",source:"Your WhatsApp image collection • 1.25.00 AM (2)",
 hindi:`ओढ़ी ओढ़ी रे मईया जी ने लाल चुनरी,
@@ -2259,11 +2391,13 @@ Om jai santoshi maataa`},
 hindi:`ओये पार ना लगोगे श्री राम के बिना, राम ना मिलेंगे हनुमान के बिना
 पार ना लगोगे श्री राम के बिना, राम ना मिलेंगे हनुमान के बिना
 सुनो पार ना लगोगे श्री राम के बिना, राम ना मिलेंगे हनुमान के बिना
-पार ना लगोगे श्री राम के बिना, राम ना मिलेंगे हनुमान के बिना`,
+पार ना लगोगे श्री राम के बिना, राम ना मिलेंगे हनुमान के बिना
+ओये राम ना मिलेंगे हनुमान के बिना, श्री राम ना मिलेंगे हनुमान के बिना`,
 roman:`Oye paar naa lagoge shri raam ke binaa, raam naa milenge hanuman ke binaa
 Paar naa lagoge shri raam ke binaa, raam naa milenge hanuman ke binaa
 Suno paar naa lagoge shri raam ke binaa, raam naa milenge hanuman ke binaa
-Paar naa lagoge shri raam ke binaa, raam naa milenge hanuman ke binaa`},
+Paar naa lagoge shri raam ke binaa, raam naa milenge hanuman ke binaa
+Oye raam naa milenge hanuman ke binaa, shri raam naa milenge hanuman ke binaa`},
 
 {id:114,no:53,titleEn:"Palki Mein Hoke Sawar Chali Re",titleHi:"पालकी में होके सवार चली रे",god:"Durga Maa",godHi:"दुर्गा माँ",type:"Bhajan",lyrics:"full",yt:"",desc:"Hindi lyrics transcribed from the supplied Maa poster. Source wording and refrain shortcuts are retained. Romanized pronunciation added from the Hindi text.",source:"Your collection • Supplied poster watermarked Beats of Serenity, shared by Ranjana Bhargava",
 hindi:`पालकी में होके सवार चली रे,
@@ -2317,11 +2451,13 @@ Paalkee mein hoke savaar..`},
 hindi:`राम भी मिलेंगे तुझे,
 श्याम भी मिलेंगे,
 जब तुझे श्री हनुमान,
-जी मिलेंगे,`,
+जी मिलेंगे,
+राम भी मिलेंगे तुझें,`,
 roman:`Ram bhi milenge tujhe,
 Shyam bhi milenge,
 Jab tujhe Shri Hanuman,
-Ji milenge,`},
+Ji milenge,
+Ram bhi milenge tujhen,`},
 
 {id:118,no:55,titleEn:"Rang De Chunaria",titleHi:"",god:"Lord Krishna",godHi:"",type:"Bhajan",lyrics:"full",yt:"jYEMHatanl0",desc:"Romanized lyrics from the supplied PDF. Columns read top to bottom, then left to right. Source spelling and repetition cues preserved. No Hindi lyrics were supplied.",source:"Your collection • bahajans-lyrcis.pdf, page 4",
 hindi:``,
@@ -2554,26 +2690,39 @@ Thodi dhul jo mil jaaye, sach kahtee hoo bas apnee taqdeer badal jaaye||`},
 
 {id:124,no:58,titleEn:"Shirdi Wale Sai Baba",titleHi:"शिरडी वाले साईं बाबा",god:"Sai Baba",godHi:"",type:"Bhajan",lyrics:"partial",yt:"aPKNPvtw4-I",desc:"Transcribed from the supplied PDF, preserving its wording and repeated lines. Romanized pronunciation added from the Hindi text.",source:"Your collection • bahajans-lyrcis.pdf, page 11",
 hindi:`ज़माने में कहाँ टूटी हुई तस्वीर बनती है
-तेरे दरबार में बिगड़ी हुई तकदीर बनती है`,
+तेरे दरबार में बिगड़ी हुई तकदीर बनती है
+
+तारीफ़ तेरी निकली है दिल से
+आई है लब पे बनके कव्वाली
+
+शिरडी वाले साईं बाबा, आया है तेरे दर पे सवाली`,
 roman:`Zamaane mein kahaan tootee huee tasveer bantee hai
-Tere darbaar mein bigdi huee takdeer bantee hai`},
+Tere darbaar mein bigdi huee takdeer bantee hai
+
+Taareef teri niklee hai dil se
+Aayi hai lab pe banke kavvaalee
+
+Shirdee waale sai baabaa, aayaa hai tere dar pe savaalee`},
 
 {id:103,no:59,titleEn:"Shri Ram Janki Baithe Hain Mere Seene Mein",titleHi:"श्री राम जानकी बैठे हैं मेरे सीने में",god:"Lord Hanuman",godHi:"हनुमान जी",type:"Bhajan",lyrics:"partial",yt:"6CBD3NlxaQA",desc:"A devotional Hanuman bhajan centered on Siya-Ram bhakti.",source:"Your Bhajan Collection • PDF pp. 7–9",
 hindi:``,
 roman:`Nahin chalao baan vyang ke, ai Vibhishan
 Tana na seh paoon, kyon todi hai yah mala
 Tujhe ai Lankapati batlaoon
-Mujh mein bhi hai, tujh mein bhi hai, sab mein hai samjhaoon`},
+Mujh mein bhi hai, tujh mein bhi hai, sab mein hai samjhaoon
+Ai Lankapati Vibhishan, le dekh main tujhko aaj dikhaoon`},
 
 {id:165,no:60,titleEn:"Shri Ram Ki Gali Mein Tum Jaana",titleHi:"श्री राम की गली में तुम आना (जाना)",god:"Lord Hanuman",godHi:"",type:"Bhajan",lyrics:"partial",yt:"2XUO7QjNFqU",desc:"Both supplied versions retained, including the alternate opening word in Hindi.",source:"Hindi and English transliteration supplied directly by the collection owner",
 hindi:`श्री राम की गली में तुम आना (जाना),
 वहाँ नाचते मिलेंगे हनुमाना।
 उनके तन में है राम, उनके मन में है राम,
-अपनी आंखों से देखे कण-कण में राम।`,
+अपनी आंखों से देखे कण-कण में राम।
+श्री राम का है वो दीवाना,`,
 roman:`Shri Ram Ki Gali Mein Tum Jaana,
 Wahan Naachte Milenge Hanumana.
 Unke Tan Mein Hai Ram, Unke Mann Mein Hai Ram,
-Apni Aankhon Se Dekhe Kan Kan Mein Ram.`},
+Apni Aankhon Se Dekhe Kan Kan Mein Ram.
+Shri Ram Ka Hai Wo Deewana,`},
 
 {id:144,no:61,titleEn:"Shri Ramchandra Kripalu Bhaj Man",titleHi:"श्री रामचन्द्र कृपालु भजु मन",god:"Lord Rama",godHi:"",type:"Bhajan",lyrics:"full",yt:"7vYETaIA7SU",desc:"Shri Ramchandra stuti from the supplied Aarti Sangrah, including its closing doha. Romanized pronunciation added from the Hindi text.",source:"Your collection • Aarti-Sangrah.pdf, pages 26 • Shri Hindu Dharma Vedic Education Foundation, www.shdvef.com",
 hindi:`श्री रामचन्द्र कृपालु भजु मन हरण भव भय दारुणं ।
@@ -2697,49 +2846,83 @@ Sone ka mandir......`},
 hindi:`थोड़ा ध्यान लगा, साईं दौड़े दौड़े आएंगे,
 थोड़ा ध्यान लगा, साईं दौड़े दौड़े आएंगे, तुझे गले से लगाएंगे।
 अखियाँ मन की खोल, तुझको दर्शन वो कराएंगे,
-अखियाँ मन की खोल, तुझको दर्शन वो कराएंगे, तुझे गले से लगाएंगे॥`,
+अखियाँ मन की खोल, तुझको दर्शन वो कराएंगे, तुझे गले से लगाएंगे॥
+
+हैं राम रमिया वो, हैं कृष्ण कन्हैया वो, वही मेरा साईं है।`,
 roman:`Thoda dhyan lagaa, sai daude daude aayenge,
 Thoda dhyan lagaa, sai daude daude aayenge, tujhe gale se lagaaenge|
 Akhiyaan man ki khol, tujhko darshan vo karaaenge,
-Akhiyaan man ki khol, tujhko darshan vo karaaenge, tujhe gale se lagaaenge||`},
+Akhiyaan man ki khol, tujhko darshan vo karaaenge, tujhe gale se lagaaenge||
+
+Hain raam ramiyaa vo, hain krishna kanhaiyaa vo, vahee mera sai hai|`},
 
 {id:101,no:65,titleEn:"Veer Hanumana Ati Balwana",titleHi:"वीर हनुमाना अति बलवाना",god:"Lord Hanuman",godHi:"हनुमान जी",type:"Bhajan",lyrics:"partial",yt:"fLqhhWJaj6c",desc:"A Hanuman bhajan from your personal collection.",source:"Your Bhajan Collection • PDF pp. 1–4",
 hindi:`वीर हनुमाना अति बलवाना,
 राम नाम रसियो रे,
-प्रभु मन बसियो रे।`,
+प्रभु मन बसियो रे।
+
+जो कोई आवे, अरज लगावे,
+सबकी सुनियो रे,`,
 roman:`Veer Hanumana ati balwana,
 Ram naam rasiyo re,
-Prabhu man basiyo re.`},
+Prabhu man basiyo re.
+
+Jo koi aave, araj lagaave,
+Sabki suniyo re,`},
 
 {id:1790584118402,no:66,titleEn:"Maine Tere Hi Bharose Hanuman",titleHi:"मैंने तेरे ही भरोसे हनुमान",god:"Lord Hanuman",godHi:"श्री हनुमान",type:"Bhajan",lyrics:"partial",yt:"29HZ0hhDqjE",desc:"A traditional devotional bhajan expressing complete faith and surrender in Lord Hanuman to safely ferry life's boat across the ocean of worldly existence.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-28T08:28:38.402Z",
 hindi:`मैंने तेरे ही भरोसे हनुमान,
-सागर में नैया डाल दई॥`,
+सागर में नैया डाल दई॥
+
+काहे की या नाव बनाई, काहे की पतवार,
+रामा काहे की लगा दी जंजीर,
+सागर में नैया डाल दई, मैंने तेरे ही...॥`,
 roman:`Maine tere hi bharose Hanuman,
-Saagar mein naiya daal dayi.`},
+Saagar mein naiya daal dayi.
+
+Kaahe ki ya naav banayi, kaahe ki patwaar,
+Rama kaahe ki laga di zanjeer,
+Saagar mein naiya daal dayi, maine tere hi...`},
 
 {id:1790589408431,no:68,titleEn:"Hey Ram Hey Ram",titleHi:"हे राम हे राम",god:"Lord Rama",godHi:"श्री राम",type:"Bhajan",lyrics:"partial",yt:"RFgomiaQLj0",desc:"A deeply soul-stirring prayer revering the divine presence and supreme grace of Lord Rama.",source:"Contributed with devotion by Shilpi (Temecula, USA)",community:true,submittedAt:"2026-09-28T09:56:48.431Z",contributorName:"Shilpi",contributorLocation:"Temecula, USA",
 hindi:`हे राम, हे राम
 जग में साचो तेरो नाम
 तू ही माता, तू ही पिता है
-तू ही तो है राधा का श्याम`,
+तू ही तो है राधा का श्याम
+हे राम, हे राम, हे राम, हे राम`,
 roman:`Hey Ram, Hey Ram
 Jag Mein Sachu Tera Naam
 Tu Hi Mata, Tu Hi Pita Hai
-Tu Hi To Hai Radha Ka Shyam`},
+Tu Hi To Hai Radha Ka Shyam
+Hey Ram, Hey Ram, Hey Ram, Hey Ram`},
 
 {id:1790629307075,no:69,titleEn:"Jab Zid Pe Aa Gayi Parvati",titleHi:"जब जिद पे आ गई पार्वती",god:"Lord Shiva",godHi:"भगवान शिव",type:"Bhajan",lyrics:"partial",yt:"rjfxLq3OQ0w",desc:"A traditional devotional folk bhajan depicting the dialogue where the Saptarishis test Mata Parvati's unwavering resolve to marry Lord Shiva.",source:"Contributed with devotion by Shilpi (Temecual USA)",community:true,submittedAt:"2026-09-28T21:01:47.075Z",contributorName:"Shilpi",contributorLocation:"Temecual USA",
 hindi:`जब जिद पे आ गई पार्वती,
 पार्वती पार्वती ।
 समझाने पहुँचे सप्तऋषि ।
-काय जिद कर रही,`,
+काय जिद कर रही,
+काय को मर रही`,
 roman:`Jab zid pe aa gayi Parvati,
 Parvati Parvati.
 Samjhane pahunche Saptarishi.
-Kaay zid kar rahi,`},
+Kaay zid kar rahi,
+Kaay ko mar rahi`},
 
 {id:1790643374503,no:70,titleEn:"Jai Siya Ram Bolo Jai Siya Ram",titleHi:"जय सिया राम बोलो जय सिया राम",god:"Lord Hanuman",godHi:"श्री हनुमान",type:"Bhajan",lyrics:"partial",yt:"Z_lRwK1JHiA",desc:"A heartfelt bhajan praising the divine attributes and grace of Lord Hanuman through the chanting of Shri Ram's holy name.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-29T00:56:14.503Z",
-hindi:`जय सिया राम बोलो जय सिया राम`,
-roman:`Jai Siya Ram Bolo Jai Siya Ram`},
+hindi:`जय सिया राम बोलो जय सिया राम
+
+जय सिया, राम बोलो, जय सियाराम,
+जय सिया, राम बोलो, जय सियाराम ॥
+
+कोई पूछे तो, हनुमत कैसा है,
+कानन कुण्डल, कुंचित केशा है ।`,
+roman:`Jai Siya Ram Bolo Jai Siya Ram
+
+Jai Siya, Ram Bolo, Jai Siyaram,
+Jai Siya, Ram Bolo, Jai Siyaram ॥
+
+Koi Poochhe To, Hanumat Kaisa Hai,
+Kanan Kundal, Kunchit Kesha Hai ।`},
 
 {id:1790658967021,no:71,titleEn:"Kaise Bani Maiya Ki Lal Chunari",titleHi:"कैसे बनी मैया की लाल चुनरी",god:"Durga Maa",godHi:"माँ दुर्गा",type:"Bhajan",lyrics:"full",yt:"wGlPfM4_UgM",desc:"A joyful traditional Mata bhajan celebrating the divine adornment of Maa Durga's sacred red chunari.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-29T05:16:07.021Z",
 hindi:`कैसे बनी कैसे बनी मैया की लाल चुनरी कैसी बनी (२)
@@ -2786,10 +2969,16 @@ Aise bani ho rama aise bani`},
 {id:1790659042406,no:72,titleEn:"Radha Dhoondh Rahi Kisi Ne Mera Shyam Dekha",titleHi:"राधा ढूंढ रही किसी ने मेरा श्याम देखा",god:"Lord Krishna",godHi:"श्री कृष्ण",type:"Bhajan",lyrics:"partial",yt:"Ww_4XwWJsEU",desc:"A sweet traditional Krishna bhajan depicting Radha Rani's divine search for her beloved Shyam across the sacred lands of Brij.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-29T05:17:22.406Z",
 hindi:`राधा ढूंढ रही किसी ने मेरा श्याम देखा
 श्याम देखा, घनश्याम देखा
-राधा ढूंढ रही किसी ने मेरा श्याम देखा`,
+राधा ढूंढ रही किसी ने मेरा श्याम देखा
+
+राधा तेरा श्याम हमने मथुरा में देखा,
+बंसी बजाते हुए,`,
 roman:`Radha dhoondh rahi kisi ne mera Shyam dekha
 Shyam dekha, Ghanshyam dekha
-Radha dhoondh rahi kisi ne mera Shyam dekha`},
+Radha dhoondh rahi kisi ne mera Shyam dekha
+
+Radha tera Shyam humne Mathura mein dekha,
+Bansi bajaate hue,`},
 
 {id:1790659254877,no:73,titleEn:"O Maa Meri Pat Rakhio Sada",titleHi:"ओ माँ मेरी पत् रखिओ सदा",god:"Durga Maa",godHi:"माँ दुर्गा",type:"Bhajan",lyrics:"full",yt:"dy2hKmedmnQ",desc:"A heartfelt prayer and devotional bhajan surrendering completely to Maa Jwala Ji (Lataan Waliye) for shelter and grace.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-29T05:20:54.877Z",
 hindi:`ओ माँ मेरी पत्, रखिओ सदा लाटां वालीए
@@ -2891,11 +3080,13 @@ Jab sher pe aati ho maharani lagti ho.`},
 hindi:`दे दे थोड़ा प्यार...
 दे दे थोड़ा प्यार मैया तेरा क्या घट जायेगा
 ये बालक भव तर जायेगा
-छोड़ तेरा दरबार..`,
+छोड़ तेरा दरबार..
+छोड़ तेरा दरबार मैया और कहाँ ये जायेगा..`,
 roman:`De de thoda pyar...
 De de thoda pyar maiya tera kya ghat jaayega
 Ye baalak bhav tar jaayega
-Chhod tera darbaar..`},
+Chhod tera darbaar..
+Chhod tera darbaar maiya aur kahan ye jaayega..`},
 
 {id:1790659448236,no:76,titleEn:"Bolte Chalo Bolte Chalo Sherawali Ke Jaykaare",titleHi:"बोलते चलो बोलते चलो शेरावाली के जयकारे",god:"Durga Maa",godHi:"माँ दुर्गा",type:"Bhajan",lyrics:"full",yt:"npnK-EDjQA0",desc:"A joyful devotional bhajan chanting praises and glorious adornments of Maa Sherawali.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-29T05:24:08.236Z",
 hindi:`बोलते चलो बोलते चलो
@@ -3069,19 +3260,31 @@ Chal ke aayi main aayi maiya ke darbar.........`},
 
 {id:1790659548825,no:79,titleEn:"Chhum Chhum Chhanan Baje Maiya Pao Paijaniya",titleHi:"छुम छुम छनन बाजे मैया पाओ पैजनिया",god:"Durga Maa",godHi:"माँ दुर्गा",type:"Bhajan",lyrics:"partial",yt:"IifUjmww7NQ",desc:"A joyous folk bhajan celebrating the divine anklets and offerings made to Mata Rani.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-29T05:25:48.825Z",
 hindi:`छुम छुम छनन बाजे मैया पाओ पैजनिया,
-पाव पैजनिया मैया पाव पैजनिया मैया,`,
+पाव पैजनिया मैया पाव पैजनिया मैया,
+
+कौन गढ़ावे मैया पाव पैजनिया,
+कौन ओढाए ओढनिया मैया पाओ पैजनिया,
+झूम झूम छनन बाजे।`,
 roman:`Chhum Chhum Chhanan Baje Maiya Pao Paijaniya,
-Paav Paijaniya Maiya Paav Paijaniya Maiya,`},
+Paav Paijaniya Maiya Paav Paijaniya Maiya,
+
+Kaun Gadhave Maiya Paav Paijaniya,
+Kaun Odhaye Odhaniya Maiya Pao Paijaniya,
+Jhoom Jhoom Chhanan Baje.`},
 
 {id:1790659572750,no:80,titleEn:"Maat Ang Chola Saaje",titleHi:"मात अंग चोला साजे",god:"Durga Maa",godHi:"माँ दुर्गा",type:"Bhajan",lyrics:"partial",yt:"eZmsLrEmHk8",desc:"A heartfelt devotional bhajan in praise of Mata Rani's divine adornment, majestic form, and benevolent grace.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-29T05:26:12.750Z",
 hindi:`मात अंग चोला साजे,
 हर रंग चोला साजे
 मात की महिमा देखो,
-ज्योत दिन रैना जागे`,
+ज्योत दिन रैना जागे
+
+तू ओढे लाल चुनरिया,`,
 roman:`Maat ang chola saaje,
 Har rang chola saaje
 Maat ki mahima dekho,
-Jyot din raina jaage`},
+Jyot din raina jaage
+
+Tu odhe laal chunariya,`},
 
 {id:1790659639079,no:81,titleEn:"Chola Maine Pehna Hai Tere Naam Ka",titleHi:"चोला मैंने पहना है तेरे नाम का",god:"Lord Hanuman",godHi:"श्री हनुमान",type:"Bhajan",lyrics:"full",yt:"pJ_pNxWz0Ko",desc:"A heartfelt devotional bhajan expressing Lord Hanuman's unswerving love, dedication, and surrender to Lord Rama.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-29T05:27:19.079Z",
 hindi:`चोला मैंने, पहना है, तेरे नाम का ॥
@@ -3180,10 +3383,16 @@ Ayodhya se la doonga tera laal chunari, mandir mein...`},
 {id:1790659785060,no:83,titleEn:"Meri Sherawali Maiya Ne Kamaal Kar Diya",titleHi:"मेरी शेरावाली मैया ने कमाल कर दिया",god:"Durga Maa",godHi:"माँ दुर्गा",type:"Bhajan",lyrics:"partial",yt:"KZKfIYLOVXI",desc:"A joyful Mata Rani bhajan celebrating the divine blessings and grace bestowed by Maa Sherawali upon Her devotees.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-29T05:29:45.060Z",
 hindi:`मेरी शेरावाली मैया ने कमाल कर दिया
 कमाल कर दिया, मालामाल कर दिया
-मेरी जोतावाली मैया ने कमाल कर दिया॥`,
+मेरी जोतावाली मैया ने कमाल कर दिया॥
+
+मैंने चूनर उड़ाई, मां सुहाग दे दिया
+मैंने नारियल चढ़ाया, गोदी लाल दे दिया`,
 roman:`Meri Sherawali Maiya Ne Kamaal Kar Diya
 Kamaal Kar Diya, Maalamaal Kar Diya
-Meri Jotawali Maiya Ne Kamaal Kar Diya..`},
+Meri Jotawali Maiya Ne Kamaal Kar Diya..
+
+Maine Chunar Udhai, Maa Suhaag De Diya
+Maine Nariyal Chadhaya, Godi Laal De Diya`},
 
 {id:1790659814607,no:84,titleEn:"Meri Sherawali Maa Tum Itna Na Kariyo Singaar",titleHi:"मेरी शेरावाली मां तुम इतना ना करियो सिंगार",god:"Durga Maa",godHi:"माँ दुर्गा",type:"Bhajan",lyrics:"full",yt:"E-q2aZYWjyY",desc:"A loving devotional bhajan dedicated to Maa Sherawali admiring Her divine beauty and adornments.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-29T05:30:14.607Z",
 hindi:`मेरी शेरावाली मां तुम इतना ना करियो सिंगार
@@ -3377,11 +3586,13 @@ Hamaar bhole hamse na bole, mandir ke oopar...`},
 hindi:`मैं तो आता रहा तेरे दर पे सदा,
 मैया तुझको भुलाने को,
 आओ गई कब भला मेरे घर पे बता,
-घर को मंदिर बनाने को,`,
+घर को मंदिर बनाने को,
+मैं तो आता रहा तेरे दर पे सदा,`,
 roman:`Main to aata raha tere dar pe sada,
 Maiya tujhko bhulane ko,
 Aao gayi kab bhala mere ghar pe bata,
-Ghar ko mandir banane ko,`},
+Ghar ko mandir banane ko,
+Main to aata raha tere dar pe sada,`},
 
 {id:1790798958826,no:88,titleEn:"Nav Durge Pooch Rahi Kisi Ne Mera Sher Dekha",titleHi:"नव दुर्गे पूछ रही किसी ने मेरा शेर देखा",god:"Durga Maa",godHi:"माँ दुर्गा",type:"Bhajan",lyrics:"full",yt:"3OAUL0t48xk",desc:"A joyful devotional bhajan celebrating the divine lion vehicle and sacred abodes of Maa Durga.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-30T20:09:18.826Z",
 hindi:`नव दुर्गे पूछ रही किसी ने मेरा शेर देखा,
@@ -3493,9 +3704,17 @@ Kothe Upar Kothdi Maiya Ka Bhavan Saja Dungi`},
 
 {id:1790799129925,no:91,titleEn:"Mujhe Tune Data Bahut Kuch Diya",titleHi:"मुझे तूने दाता बहुत कुछ दिया",god:"Lord Vishnu",godHi:"भगवान विष्णु",type:"Bhajan",lyrics:"partial",yt:"hAfTqv4XOGY",desc:"A soulful prayer expressing heartfelt gratitude and devotion to the Divine for countless blessings in life.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-30T20:12:09.925Z",
 hindi:`मुझे तूने दाता बहुत कुछ दिया तेरा शुक्रिया है
-मुझे तूने भगवन बहुत कुछ दिया तेरा शुक्रिया है`,
+मुझे तूने भगवन बहुत कुछ दिया तेरा शुक्रिया है
+
+ना मिलती अगर दी हुयी दान तेरी
+ज़माने में क्या थी औकात मेरी
+मुझे तूने जीने के काबिल किया है`,
 roman:`Mujhe tune data bahut kuch diya tera shukriya hai
-Mujhe tune bhagwan bahut kuch diya tera shukriya hai`},
+Mujhe tune bhagwan bahut kuch diya tera shukriya hai
+
+Na milti agar di huyi daan teri
+Zamane mein kya thi aukaat meri
+Mujhe tune jeene ke kaabil kiya hai`},
 
 {id:1790799267780,no:92,titleEn:"Tum Sajti Raho Hum Sajate Rahe",titleHi:"तुम सजती रहो हम सजाते रहे",god:"Durga Maa",godHi:"माँ दुर्गा",type:"Bhajan",lyrics:"full",yt:"3AvBEaQuMzk",desc:"A loving devotional bhajan expressing pure joy and devotion in adorning and worshipping Mata Rani.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-30T20:14:27.780Z",
 hindi:`तुम सजती रहो हम सजाते रहे
@@ -3711,11 +3930,15 @@ Sabke man ko mohe,`},
 hindi:`राम नाम के हीरे-मोती, मैं बिखराऊँ गली गली,
 कृष्ण नाम के हीरे-मोती, मैं बिखराऊँ गली गली,
 ले लो रे कोई राम का प्यारा, शोर मचाऊँ गली गली॥
-राम नाम के हीरे-मोती...`,
+राम नाम के हीरे-मोती...
+
+माया के दीवानों सुनलो, एक दिन ऐसा आयेगा,`,
 roman:`Ram naam ke heere-moti, main bikhraun gali gali,
 Krishna naam ke heere-moti, main bikhraun gali gali,
 Le lo re koi Ram ka pyaara, shor machaun gali gali.
-Ram naam ke heere-moti...`},
+Ram naam ke heere-moti...
+
+Maya ke deewanon sunlo, ek din aisa aayega,`},
 
 {id:1790998473080,no:97,titleEn:"Mohe Pagal Kar Gayo Ri Maiya Ji Tero Languriya",titleHi:"मोहे पागल कर गयो री मैया जी तेरो लांगुरिया",god:"Durga Maa",godHi:"माँ दुर्गा",type:"Bhajan",lyrics:"full",yt:"hYK4FBa9n5k",desc:"A traditional folk Languriya bhajan sung with joyful devotion in praise of Maa Durga.",source:"Contributed with devotion",community:true,submittedAt:"2026-10-03T03:34:33.080Z",
 hindi:`मोहे पागल कर गयो री,
@@ -3758,8 +3981,14 @@ Maiya ji tero languriya....`},
 {id:1791045103391,no:98,titleEn:"Angana Padharo Maharani",titleHi:"अंगना पधारो महारानी",god:"Durga Maa",godHi:"माँ दुर्गा",type:"Bhajan",lyrics:"partial",yt:"oklHjHqPaCs",desc:"A beautiful regional devotional bhajan inviting Maa Sharda Bhavani to grace one's home and life.",source:"Contributed with devotion",community:true,submittedAt:"2026-10-03T16:31:43.391Z",
 hindi:`अंगना पधारो महारानी मोरी शारदा भवानी
 शारदा भवानी मोरी शारदा भवानी
-करदो कृपा महारानी.. मोरी शारदा भवानी, अंगना.....`,
+करदो कृपा महारानी.. मोरी शारदा भवानी, अंगना.....
+
+ऊँची पहाड़िया पे मंदिर बनो है
+मंदिर में मैया को आसान लगो है`,
 roman:`Angana padharo maharani mori sharada bhavani
 Sharada bhavani mori sharada bhavani
-Kardo kripa maharani.. mori sharada bhavani, angana.....`}
+Kardo kripa maharani.. mori sharada bhavani, angana.....
+
+Unchi pahariya pe mandir bano hai
+Mandir mein maiya ko aasan lago hai`}
 ];

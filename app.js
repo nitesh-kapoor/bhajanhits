@@ -9,8 +9,9 @@ const esc = text => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<
 const slug = x => x.slug || x.titleEn.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 // Keep the owner's original data intact; adapt field names for future additions.
 const adapt = b => { const x={...b,titleEn:b.titleEnglish ?? b.titleEn,titleHi:b.titleHindi ?? b.titleHi,god:b.deity ?? b.god,hindi:b.lyricsHindi ?? b.hindi,roman:b.lyricsRomanized ?? b.roman}; if(x.lyrics!=='full'){x.lyrics='partial';x.hindi=openingLines(x.hindi);x.roman=openingLines(x.roman);} return x; };
-// Opening lines of a copyrighted song: the first stanza, at most 4 lines (same rule as data.js and /api/bhajans).
-function openingLines(text){const out=[];for(const line of String(text??'').split('\n')){if(!line.trim()){if(out.length)break;continue;}out.push(line.trim());if(out.length===4)break;}return out.join('\n');}
+// Opening lines of a copyrighted song: the first 5 lines (into the next stanza when the first is short),
+// skipping a line that repeats the one before. Same rule as data.js (build-data.mjs) and /api/bhajans.
+function openingLines(text){const out=[];let count=0,previous='';for(const raw of String(text??'').split('\n')){const line=raw.trim();if(!line){if(count&&out[out.length-1]!=='')out.push('');continue;}if(line.toLowerCase()===previous)continue;previous=line.toLowerCase();out.push(line);if(++count===5)break;}while(out.length&&out[out.length-1]==='')out.pop();return out.join('\n');}
 const items = bhajans.map(adapt);
 const songNumbers = new Map(), ids = new Set(), index = new Map();
 const songNumber = x => songNumbers.get(x.id); // Permanent song numbers, shared by every view.
@@ -97,12 +98,14 @@ function renderHome(){
  $('#newlyList').innerHTML=fresh.map(x=>`<li style="--deity:${deityColor(x.god)}"><button data-open="${x.id}"><span class="deity-icon" aria-hidden="true">${deityIcon(x.god)}</span><span class="song-info"><strong>${esc(x.titleEn)}</strong><small>${x.contributorName?'by '+esc(x.contributorName)+(x.contributorLocation?', '+esc(x.contributorLocation):''):'Community contribution'}</small></span></button></li>`).join('');
 }
 function renderCategories(){
- const used=[['','All Deities',''],...categories.filter(c=>items.some(x=>x.god===c[1]||(x.deities||[]).includes(c[1])))];
+ const godCount=g=>items.filter(x=>x.god===g||(x.deities||[]).includes(g)).length;
+ // Deities with the most songs come first (ties keep the categories order).
+ const used=[['','All Deities','',items.length],...categories.map(c=>[...c,godCount(c[1])]).filter(c=>c[3]).sort((a,b)=>b[3]-a[3])];
  // Type tabs with counts; data-type buttons share the click handler and pressed state.
  const count=t=>items.filter(x=>t==='all'||x.type===t).length;
  $('#typeTabs').innerHTML=typeTabs.map(([t,label])=>`<button data-type="${t}">${label} <span class="tab-count">${count(t)}</span></button>`).join('');
  // Home quick-pick row: same data-god buttons, so the shared click handler and pressed state apply.
- $('#deityChips').innerHTML=used.map(c=>`<button class="deity-chip" data-god="${esc(c[1]==='All Deities'?'all':c[1])}" style="--deity:${c[1]==='All Deities'?'#853c29':deityColor(c[1])}"><span aria-hidden="true">${c[0]||'✧'}</span>${esc(c[1]==='All Deities'?'All':c[1].replace(/^Lord /,''))}</button>`).join('');
+ $('#deityChips').innerHTML=used.map(c=>`<button class="deity-chip" data-god="${esc(c[1]==='All Deities'?'all':c[1])}" style="--deity:${c[1]==='All Deities'?'#853c29':deityColor(c[1])}" aria-label="${esc(c[1]==='All Deities'?'All deities':c[1])}, ${c[3]} songs"><span aria-hidden="true">${c[0]||'✧'}</span>${esc(c[1]==='All Deities'?'All':c[1].replace(/^Lord /,''))}<span class="chip-count" aria-hidden="true">${c[3]}</span></button>`).join('');
 }
 renderCategories();
 function clearFilters(toType=DEFAULT_TYPE){god='all';type=toType;view='all';$('#search').value='';render();}
@@ -119,6 +122,7 @@ document.addEventListener('click',e=>{
  if(b.dataset.favorite)toggleFavorite(Number(b.dataset.favorite));
  if(b.dataset.open)openItem(Number(b.dataset.open));
  if(b.dataset.play)playVideo(b.dataset.play);
+ if(b.dataset.video&&current)renderPlayer(current,b.dataset.video);
  if(b.dataset.lang && current && hasLyrics(current,b.dataset.lang)){language=b.dataset.lang;store.set('language',language);renderLyrics();}
 });
 function toggleFavorite(id){
@@ -147,9 +151,13 @@ function showItem(x){
 // YouTube's official embedded player (youtube-nocookie: no tracking cookies until it plays). A thumbnail
 // is shown first and the player loads only when tapped; it keeps playing while the lyrics are scrolled.
 const videoId=x=>/^[\w-]{11}$/.test(x.yt||'')?x.yt:'';
-function renderPlayer(x){
- const id=videoId(x);$('#player').hidden=!id;$('#player').classList.remove('playing');
- $('#player').innerHTML=id?`<button class="player-start" data-play="${id}" aria-label="Play the video of ${esc(x.titleEn)}"><img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="" loading="lazy"><span class="play-icon" aria-hidden="true">▶</span><span class="player-label">Listen &amp; sing along</span></button><a class="player-link" href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener noreferrer">Open on YouTube ↗</a>`:'';
+function renderPlayer(x,kind){
+ const song=videoId(x),words=/^[\w-]{11}$/.test(x.ytLyrics||'')?x.ytLyrics:'';
+ kind=kind||(words?'lyrics':'song');if(kind==='lyrics'&&!words)kind='song';if(kind==='song'&&!song)kind='lyrics';
+ const id=kind==='lyrics'?words:song;
+ $('#player').hidden=!id;$('#player').classList.remove('playing');
+ const tabs=song&&words?`<div class="player-tabs" role="group" aria-label="Video"><button data-video="lyrics" aria-pressed="${kind==='lyrics'}">📜 Lyrics video</button><button data-video="song" aria-pressed="${kind==='song'}">🎵 Song video</button></div>`:'';
+ $('#player').innerHTML=id?tabs+`<button class="player-start" data-play="${id}" aria-label="Play the ${kind==='lyrics'?'lyrics video':'video'} of ${esc(x.titleEn)}"><img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="" loading="lazy"><span class="play-icon" aria-hidden="true">▶</span><span class="player-label">${kind==='lyrics'?'Lyrics on screen · listen &amp; read':'Listen &amp; sing along'}</span></button><a class="player-link" href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener noreferrer">Open on YouTube ↗</a>`:'';
 }
 function playVideo(id){
  if(!/^[\w-]{11}$/.test(id))return;

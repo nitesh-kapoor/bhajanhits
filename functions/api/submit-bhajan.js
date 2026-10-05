@@ -286,6 +286,11 @@ Respond ONLY with valid raw JSON. Do not include markdown code block formatting 
     }
 
     newEntry.yt = await findYoutubeVideo(context, newEntry);
+    // Copyrighted songs also get an official lyrics video if one exists (words shown on screen).
+    if (newEntry.lyrics === 'partial') {
+      const words = await findYoutubeVideo(context, newEntry, { lyricsVideo: true });
+      if (words && words !== newEntry.yt) newEntry.ytLyrics = words;
+    }
 
     // Permanent song number: the next after the highest in use (data.js holds 1-98; KV still holds
     // the entries that were moved into data.js, so their numbers are never reused either).
@@ -510,7 +515,10 @@ function isoSeconds(iso) {
   return m ? (+m[1] || 0) * 86400 + (+m[2] || 0) * 3600 + (+m[3] || 0) * 60 + (+m[4] || 0) : 0;
 }
 
-async function findYoutubeVideo(context, song) {
+// With { lyricsVideo: true } it looks for a lyrics video instead (title must say lyrics/lyrical, and
+// the labels' own channels are strongly preferred, since they own the words).
+const YT_LYRICS = /lyric|लिरिक्स/i;
+async function findYoutubeVideo(context, song, { lyricsVideo = false } = {}) {
   const key = context.env?.YOUTUBE_API_KEY;
   if (!key) return '';
   try {
@@ -522,7 +530,8 @@ async function findYoutubeVideo(context, song) {
       return res.json();
     };
     const lower = song.titleEn.toLowerCase();
-    const q = song.titleEn + (song.type === 'Aarti' ? (lower.includes('aarti') ? '' : ' aarti') : song.type === 'Bhajan' ? ' bhajan' : '');
+    const q = lyricsVideo ? song.titleEn + ' lyrics'
+      : song.titleEn + (song.type === 'Aarti' ? (lower.includes('aarti') ? '' : ' aarti') : song.type === 'Bhajan' ? ' bhajan' : '');
     const found = await api('search', { part: 'snippet', q, type: 'video', videoEmbeddable: 'true', maxResults: '10', regionCode: 'IN', relevanceLanguage: 'hi' });
     const ids = (found.items || []).map(i => i.id?.videoId).filter(Boolean);
     if (!ids.length) return '';
@@ -535,9 +544,10 @@ async function findYoutubeVideo(context, song) {
       const joined = squash(titleWords).length > 8 && squash(latinWords(title)).includes(squash(titleWords)) ? 1 : 0;
       const match = Math.max(joined, wordOverlap(titleWords, latinWords(title)), wordOverlap(titleHindi, hindiWords(title)));
       if (match < 0.6 || v.status?.embeddable === false || v.status?.privacyStatus !== 'public' || v.status?.madeForKids) continue;
+      if (lyricsVideo && !YT_LYRICS.test(title)) continue;
       const seconds = isoSeconds(v.contentDetails?.duration);
       let score = 60 * match + 6 * Math.log10(Number(v.statistics?.viewCount || 0) + 1);
-      if (YT_OFFICIAL.test(channel)) score += 12;
+      if (YT_OFFICIAL.test(channel)) score += lyricsVideo ? 30 : 12;
       if (/ - Topic$/.test(channel)) score += 8;
       if (YT_BAD.test(title)) score -= 30;
       if (YT_OTHER_FORM.test(title) && !YT_OTHER_FORM.test(song.titleEn + ' ' + song.titleHi)) score -= 40;

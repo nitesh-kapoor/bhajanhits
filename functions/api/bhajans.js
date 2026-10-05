@@ -31,13 +31,19 @@ export async function onRequestGet(context) {
   }
 }
 
-// Opening lines of a copyrighted song: the first stanza, at most 4 lines (same rule as data.js).
+// Opening lines of a copyrighted song: the first 5 lines (into the next stanza when the first is short),
+// skipping a line that repeats the one before. Same rule as data.js and app.js openingLines.
 function excerpt(text) {
   const out = [];
-  for (const line of String(text || '').split('\n')) {
-    if (!line.trim()) { if (out.length) break; continue; }
-    out.push(line.trim());
-    if (out.length === 4) break;
+  let count = 0, previous = '';
+  for (const raw of String(text || '').split('\n')) {
+    const line = raw.trim();
+    if (!line) { if (count && out[out.length - 1] !== '') out.push(''); continue; }
+    if (line.toLowerCase() === previous) continue;
+    previous = line.toLowerCase();
+    out.push(line);
+    if (++count === 5) break;
   }
+  while (out.length && out[out.length - 1] === '') out.pop();
   return out.join('\n');
 }
