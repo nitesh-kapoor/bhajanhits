@@ -8,19 +8,20 @@ const store = {
 const esc = text => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const slug = x => x.slug || x.titleEn.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 // Keep the owner's original data intact; adapt field names for future additions.
-const adapt = b => ({...b,titleEn:b.titleEnglish ?? b.titleEn,titleHi:b.titleHindi ?? b.titleHi,god:b.deity ?? b.god,hindi:b.lyricsHindi ?? b.hindi,roman:b.lyricsRomanized ?? b.roman});
+const adapt = b => { const x={...b,titleEn:b.titleEnglish ?? b.titleEn,titleHi:b.titleHindi ?? b.titleHi,god:b.deity ?? b.god,hindi:b.lyricsHindi ?? b.hindi,roman:b.lyricsRomanized ?? b.roman}; if(x.lyrics!=='full'){x.lyrics='partial';x.hindi=openingLines(x.hindi);x.roman=openingLines(x.roman);} return x; };
+// Opening lines of a copyrighted song: the first 5 lines (into the next stanza when the first is short),
+// skipping a line that repeats the one before. Same rule as data.js (build-data.mjs) and /api/bhajans.
+function openingLines(text){const out=[];let count=0,previous='';for(const raw of String(text??'').split('\n')){const line=raw.trim();if(!line){if(count&&out[out.length-1]!=='')out.push('');continue;}if(line.toLowerCase()===previous)continue;previous=line.toLowerCase();out.push(line);if(++count===5)break;}while(out.length&&out[out.length-1]==='')out.pop();return out.join('\n');}
 const items = bhajans.map(adapt);
 const songNumbers = new Map(), ids = new Set(), index = new Map();
 const songNumber = x => songNumbers.get(x.id); // Permanent song numbers, shared by every view.
 const normalized = s => String(s??'').normalize('NFKD').replace(/[̀-ͯ]/g,'').toLowerCase();
-// Permanent numbers: the original 65 keep the A–Z numbers groups already use (id: number).
-// Every later song keeps the number stored with it (`no`, assigned by the server for community songs);
-// anything without one gets the next free number in id order. Numbers never shift when songs are added.
-const fixedNumbers={142:1,150:2,115:3,117:4,157:5,127:6,129:7,148:8,109:9,158:10,102:11,161:12,111:13,130:14,135:15,104:16,159:17,134:18,137:19,132:20,146:21,164:22,120:23,145:24,160:25,113:26,156:27,131:28,121:29,153:30,155:31,154:32,151:33,110:34,149:35,108:36,116:37,126:38,123:39,105:40,128:41,147:42,107:43,106:44,152:45,141:46,133:47,136:48,139:49,140:50,143:51,162:52,114:53,163:54,118:55,125:56,119:57,124:58,103:59,165:60,144:61,138:62,112:63,122:64,101:65};
+// Permanent numbers: every song keeps the number stored with it (`no` in data.js, assigned by the server
+// for new community songs); anything without one gets the next free number. Numbers never shift or get reused.
 function rebuildIndex(){
  songNumbers.clear();ids.clear();index.clear();
  const taken=new Set(),pending=[];
- [...items].sort((a,b)=>a.id-b.id).forEach(x=>{const n=Number.isInteger(x.no)&&x.no>0?x.no:fixedNumbers[x.id];if(n&&!taken.has(n)){taken.add(n);songNumbers.set(x.id,n);}else pending.push(x);});
+ [...items].sort((a,b)=>a.id-b.id).forEach(x=>{const n=Number.isInteger(x.no)&&x.no>0?x.no:0;if(n&&!taken.has(n)){taken.add(n);songNumbers.set(x.id,n);}else pending.push(x);});
  let next=Math.max(0,...taken);pending.forEach(x=>songNumbers.set(x.id,++next));
  items.sort((a,b)=>songNumber(a)-songNumber(b));
  items.forEach(x=>{ids.add(x.id);index.set(x.id,normalized([x.titleEn,x.titleHi,x.god,x.godHi,...(x.deities||[]),x.type,x.roman].join(' ')));});
@@ -43,8 +44,7 @@ const DEFAULT_TYPE='Bhajan'; // the home page opens on Bhajans; searching always
 // Type tabs on the home page. Chalisa and Sundarkand (none yet) appear under All.
 const typeTabs=[['Bhajan','Bhajan'],['Aarti','Aarti'],['Chanting','Chanting'],['Mantra','Mantra'],['all','All']];
 let god='all', type=DEFAULT_TYPE, view='all', current=null, sequence=[], singing=false, wakeLock=null, wakePending=false, browseScroll=0, lastOpened=null, noticeTimer;
-const unavailableHindi = new Set([102,103,104,105]); // Original PDF-unavailable notices, not lyrics.
-const hasLyrics = (x,lang) => typeof x[lang]==='string' && x[lang].trim().length>0 && !(lang==='hindi' && unavailableHindi.has(x.id) && x[lang].includes('PDF में उपलब्ध नहीं'));
+const hasLyrics = (x,lang) => typeof x[lang]==='string' && x[lang].trim().length>0;
 function notify(message){ $('#notice').textContent=message; $('#notice').hidden=false; clearTimeout(noticeTimer); noticeTimer=setTimeout(()=>$('#notice').hidden=true,4000); }
 function matching(){
  const query=$('#search').value.trim();
@@ -98,12 +98,14 @@ function renderHome(){
  $('#newlyList').innerHTML=fresh.map(x=>`<li style="--deity:${deityColor(x.god)}"><button data-open="${x.id}"><span class="deity-icon" aria-hidden="true">${deityIcon(x.god)}</span><span class="song-info"><strong>${esc(x.titleEn)}</strong><small>${x.contributorName?'by '+esc(x.contributorName)+(x.contributorLocation?', '+esc(x.contributorLocation):''):'Community contribution'}</small></span></button></li>`).join('');
 }
 function renderCategories(){
- const used=[['','All Deities',''],...categories.filter(c=>items.some(x=>x.god===c[1]||(x.deities||[]).includes(c[1])))];
+ const godCount=g=>items.filter(x=>x.god===g||(x.deities||[]).includes(g)).length;
+ // Deities with the most songs come first (ties keep the categories order).
+ const used=[['','All Deities','',items.length],...categories.map(c=>[...c,godCount(c[1])]).filter(c=>c[3]).sort((a,b)=>b[3]-a[3])];
  // Type tabs with counts; data-type buttons share the click handler and pressed state.
  const count=t=>items.filter(x=>t==='all'||x.type===t).length;
  $('#typeTabs').innerHTML=typeTabs.map(([t,label])=>`<button data-type="${t}">${label} <span class="tab-count">${count(t)}</span></button>`).join('');
  // Home quick-pick row: same data-god buttons, so the shared click handler and pressed state apply.
- $('#deityChips').innerHTML=used.map(c=>`<button class="deity-chip" data-god="${esc(c[1]==='All Deities'?'all':c[1])}" style="--deity:${c[1]==='All Deities'?'#853c29':deityColor(c[1])}"><span aria-hidden="true">${c[0]||'✧'}</span>${esc(c[1]==='All Deities'?'All':c[1].replace(/^Lord /,''))}</button>`).join('');
+ $('#deityChips').innerHTML=used.map(c=>`<button class="deity-chip" data-god="${esc(c[1]==='All Deities'?'all':c[1])}" style="--deity:${c[1]==='All Deities'?'#853c29':deityColor(c[1])}" aria-label="${esc(c[1]==='All Deities'?'All deities':c[1])}, ${c[3]} songs"><span aria-hidden="true">${c[0]||'✧'}</span>${esc(c[1]==='All Deities'?'All':c[1].replace(/^Lord /,''))}<span class="chip-count" aria-hidden="true">${c[3]}</span></button>`).join('');
 }
 renderCategories();
 function clearFilters(toType=DEFAULT_TYPE){god='all';type=toType;view='all';$('#search').value='';render();}
@@ -119,6 +121,8 @@ document.addEventListener('click',e=>{
  if(b.hasAttribute('data-clear'))clearFilters('all');
  if(b.dataset.favorite)toggleFavorite(Number(b.dataset.favorite));
  if(b.dataset.open)openItem(Number(b.dataset.open));
+ if(b.dataset.play)playVideo(b.dataset.play);
+ if(b.dataset.video&&current)renderPlayer(current,b.dataset.video);
  if(b.dataset.lang && current && hasLyrics(current,b.dataset.lang)){language=b.dataset.lang;store.set('language',language);renderLyrics();}
 });
 function toggleFavorite(id){
@@ -136,14 +140,33 @@ function showItem(x){
  $('#browse').hidden=true;$('#reader').hidden=false;document.body.classList.add('reading');
  $('#readerMeta').textContent='Song #'+songNumber(x)+' · '+x.god+' · '+x.type;$('#readerTitle').textContent=x.titleEn;$('#readerHindi').textContent=x.titleHi||'';
  $('#description').textContent=x.desc||'';$('#source').textContent=x.source||'';
- const yt=youtubeUrl(x.youtubeUrl);$('#youtubeLink').hidden=!yt;if(yt)$('#youtubeLink').href=yt;else $('#youtubeLink').removeAttribute('href');
+ renderPlayer(x);
+ const partial=x.lyrics==='partial';$('#partialNote').hidden=!partial;
+ if(partial)$('#fullLyricsLink').href='https://www.google.com/search?q='+encodeURIComponent(x.titleEn+' lyrics poster')+'&udm=2';
  document.title=x.titleEn+' | Bhakti Bhajan Sangrah';renderLyrics();renderFavorite();
  if(!sequence.includes(x.id))sequence=items.map(x=>x.id);
  const position=sequence.indexOf(x.id);$('#previous').disabled=position<=0;$('#next').disabled=position>=sequence.length-1;
  window.scrollTo(0,0);$('#readerTitle').focus({preventScroll:true});
 }
-// Only https YouTube links are shown (the server also filters these; community data is re-checked here).
-function youtubeUrl(value){try{const u=new URL(String(value||''));const host=u.hostname.replace(/^(www\.|m\.|music\.)/,'');return u.protocol==='https:'&&(host==='youtube.com'||host==='youtu.be')?u.href:'';}catch{return '';}}
+// YouTube's official embedded player (youtube-nocookie: no tracking cookies until it plays). A thumbnail
+// is shown first and the player loads only when tapped; it keeps playing while the lyrics are scrolled.
+const videoId=x=>/^[\w-]{11}$/.test(x.yt||'')?x.yt:'';
+function renderPlayer(x,kind){
+ const song=videoId(x),words=/^[\w-]{11}$/.test(x.ytLyrics||'')?x.ytLyrics:'';
+ kind=kind||(words?'lyrics':'song');if(kind==='lyrics'&&!words)kind='song';if(kind==='song'&&!song)kind='lyrics';
+ const id=kind==='lyrics'?words:song;
+ $('#player').hidden=!id;$('#player').classList.remove('playing');
+ const tabs=song&&words?`<div class="player-tabs" role="group" aria-label="Video"><button data-video="lyrics" aria-pressed="${kind==='lyrics'}">📜 Lyrics video</button><button data-video="song" aria-pressed="${kind==='song'}">🎵 Song video</button></div>`:'';
+ $('#player').innerHTML=id?tabs+`<button class="player-start" data-play="${id}" aria-label="Play the ${kind==='lyrics'?'lyrics video':'video'} of ${esc(x.titleEn)}"><img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="" loading="lazy"><span class="play-icon" aria-hidden="true">▶</span><span class="player-label">${kind==='lyrics'?'Lyrics on screen · listen &amp; read':'Listen &amp; sing along'}</span></button><a class="player-link" href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener noreferrer">Open on YouTube ↗</a>`:'';
+}
+function playVideo(id){
+ if(!/^[\w-]{11}$/.test(id))return;
+ const frame=document.createElement('iframe');
+ frame.src='https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0&playsinline=1';
+ frame.title='YouTube video: '+(current?current.titleEn:'bhajan');
+ frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';
+ $('#player .player-start')?.replaceWith(frame);$('#player').classList.add('playing');
+}
 function renderLyrics(){
  const lang=hasLyrics(current,language)?language:hasLyrics(current,'hindi')?'hindi':'roman';
  all('[data-lang]').forEach(b=>{b.disabled=!hasLyrics(current,b.dataset.lang);b.setAttribute('aria-pressed',b.dataset.lang===lang);b.title=b.disabled?'This version is not available in the collection':'';});
@@ -157,7 +180,7 @@ $('#smaller').onclick=()=>{size=Math.max(18,size-2);store.set('fontSize',size);a
 $('#larger').onclick=()=>{size=Math.min(40,size+2);store.set('fontSize',size);applySize();};
 $('#readerFavorite').onclick=()=>toggleFavorite(current.id);
 function closeReader(){
- setSinging(false);current=null;$('#browse').hidden=false;$('#reader').hidden=true;document.body.classList.remove('reading');document.title='Bhakti Bhajan Sangrah';render();
+ setSinging(false);current=null;$('#player').innerHTML='';$('#browse').hidden=false;$('#reader').hidden=true;document.body.classList.remove('reading');document.title='Bhakti Bhajan Sangrah';render();
  requestAnimationFrame(()=>{window.scrollTo(0,browseScroll);const b=document.querySelector('[data-open="'+lastOpened+'"]');if(b)b.focus({preventScroll:true});});
 }
 $('#back').onclick=()=>{if(history.state?.bbsReader)history.back();else{const url=new URL(location.href);url.searchParams.delete('bhajan');history.replaceState(null,'',url);closeReader();}};
@@ -178,13 +201,38 @@ function setSinging(value){singing=value;document.body.classList.toggle('singing
 $('#singing').onclick=()=>setSinging(!singing);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')requestWake();else releaseWake();});
 window.addEventListener('pagehide',releaseWake);
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#shareDialog').open&&!$('#submitDialog').open){if(singing)setSinging(false);else if(current)$('#back').click();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#shareDialog').open&&!$('#submitDialog').open&&!$('#reportDialog').open){if(singing)setSinging(false);else if(current)$('#back').click();}});
 $('#share').onclick=async()=>{
  const data={title:'Song #'+songNumber(current)+' · '+current.titleEn+' | Bhakti Bhajan Sangrah',url:location.href};
  if(navigator.share){try{await navigator.share(data);return;}catch(e){if(e.name==='AbortError')return;}}
  try{await navigator.clipboard.writeText(data.url);notify('Link copied.');}catch{$('#shareLink').value=data.url;$('#shareDialog').showModal();$('#shareLink').select();}
 };
 $('#closeShare').onclick=()=>$('#shareDialog').close();
+// "Report a problem": saved by /api/report for the owner to read in Cloudflare (no email is sent).
+let reportSong=null;
+$('#report').onclick=()=>{
+ reportSong=current;$('#reportSong').textContent='Song #'+songNumber(current)+' · '+current.titleEn;
+ $('#reportReason').value='';$('#reportComment').value='';$('#reportWebsite').value='';
+ $('#reportNotice').hidden=true;$('#reportForm').hidden=false;$('#reportDone').hidden=true;$('#reportSend').disabled=false;
+ $('#reportDialog').showModal();
+};
+const closeReport=()=>$('#reportDialog').close();
+$('#closeReport').onclick=closeReport;$('#reportClose2').onclick=closeReport;
+function reportProblem(message){$('#reportNotice').textContent=message;$('#reportNotice').hidden=false;}
+$('#reportSend').onclick=async()=>{
+ const reason=$('#reportReason').value,comment=$('#reportComment').value.trim(),email=$('#reportEmail').value.trim();
+ if(!reason)return reportProblem('Please choose what is wrong.');
+ if(comment.length<5)return reportProblem('Please write a few words about the problem.');
+ if(Date.now()-Number(store.get('lastReport',0))<60000)return reportProblem('Thank you! Please wait a minute before sending another report.');
+ $('#reportSend').disabled=true;$('#reportNotice').hidden=true;
+ try{
+  const res=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({no:songNumber(reportSong),title:reportSong.titleEn,reason,comment,email,website:$('#reportWebsite').value})});
+  const data=await res.json().catch(()=>({}));
+  if(data.status==='ok'){store.set('lastReport',Date.now());$('#reportForm').hidden=true;$('#reportDone').hidden=false;}
+  else reportProblem(data.error||'The report could not be sent. Please email bhajanhits.contact@gmail.com instead.');
+ }catch{reportProblem('Network problem. Please check your connection and try again.');}
+ finally{$('#reportSend').disabled=false;}
+};
 // Bhajan Submission Dialog Controller
 const submitDialog = $('#submitDialog');
 let submitMode = 'photo';
@@ -206,7 +254,6 @@ function resetSubmitForm() {
   $('#previewWrap').hidden = true;
   $('#fileDropzone').hidden = false;
   $('#submitLyrics').value = '';
-  $('#youtubeUrl').value = '';
   $('#contributorName').value = '';
   $('#contributorLocation').value = '';
   $('#submitStatus').hidden = true;
@@ -311,7 +358,6 @@ $('#submitActionBtn')?.addEventListener('click', async () => {
     imageData: submitMode === 'photo' ? uploadedImageData : null,
     imageMime: uploadedImageMime,
     lyricsText: submitMode === 'text' ? lyricsText : null,
-    youtubeUrl: $('#youtubeUrl').value.trim(),
     contributorName: $('#contributorName').value.trim(),
     contributorLocation: $('#contributorLocation').value.trim()
   };

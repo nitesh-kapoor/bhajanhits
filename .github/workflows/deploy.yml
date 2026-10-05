@@ -35,12 +35,14 @@ jobs:
           node --check sw.js
           node --input-type=module -e "import('./functions/api/submit-bhajan.js')"
           node --input-type=module -e "import('./functions/api/bhajans.js')"
+          node --input-type=module -e "import('./functions/api/report.js')"
           # index.html must load style.css / data.js / app.js with ?v=<sw.js cache version>, so browsers
           # never pair a new page with an old cached script (bhajanhits.com caches JS/CSS for hours).
           V=$(grep -o "bbs-static-v[0-9]*" sw.js | head -1 | grep -o "[0-9]*$")
           for f in style.css data.js app.js; do
             grep -q "$f?v=$V\"" index.html || { echo "index.html must reference $f?v=$V to match sw.js (bbs-static-v$V)"; exit 1; }
           done
+          if grep -q "CONTACT_EMAIL_TO_BE_ADDED" copyright.html; then echo "copyright.html still has the contact email placeholder"; exit 1; fi
           echo "All syntax and module checks passed."
 
       - name: Determine Target Environment & Branch Flag
@@ -62,7 +64,7 @@ jobs:
       - name: Collect public site files
         run: |
           mkdir -p site
-          cp index.html style.css app.js data.js sw.js manifest.json icon.svg icon-192.png icon-512.png site/
+          cp index.html copyright.html style.css app.js data.js sw.js manifest.json icon.svg icon-192.png icon-512.png site/
           ls -la site
 
       - name: Deploy to Cloudflare Pages

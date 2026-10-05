@@ -17,7 +17,6 @@ export async function onRequestPost(context) {
       imageData,
       imageMime = 'image/jpeg',
       lyricsText,
-      youtubeUrl,
       contributorName,
       contributorLocation
     } = body;
@@ -88,6 +87,13 @@ TASK:
        "Shri Krishna Govind Hare Murari, He Nath Narayan Vasudeva", "Om Namah Shivaya" sung as a dhun).
      * Mantra: a Sanskrit mantra, shloka, stuti or prarthana that is recited (e.g. Gayatri Mantra, Saraswati Vandana).
      * Chalisa: a 40-verse hymn such as Hanuman Chalisa. Sundarkand: passages of the Sundarkand.
+   - Classify the lyrics rights ("lyricsRights"), which decides whether the full text may be shown:
+     * "traditional": centuries-old or anonymous texts: classic aartis (e.g. "Om Jai Jagdish Hare", "Jai Ganesh Deva"),
+       stotras, mantras, chalisas, compositions of saints such as Tulsidas, Surdas, Meera Bai or Kabir, and folk,
+       kirtan-mandali, jagran or languriya songs passed on orally with no known writer.
+     * "modern": film songs and devotional words set to a film song, songs by known modern lyricists or singers,
+       songs released by music labels (e.g. T-Series, Tips, Saregama, Times Music), recent viral bhajans.
+     * If unsure, answer "modern".
 
    Return JSON format:
    {
@@ -97,6 +103,7 @@ TASK:
      "god": "Deity name from the allowed list",
      "godHi": "Deity name in Hindi (e.g. श्री कृष्ण, माँ दुर्गा)",
      "type": "Type from allowed list",
+     "lyricsRights": "traditional or modern",
      "hindi": "Complete lyrics in Devanagari Hindi with newline breaks between lines and stanzas",
      "roman": "Complete lyrics in Romanized Hindi with newline breaks between lines and stanzas",
      "desc": "Short 1-sentence devotional description"
@@ -246,6 +253,9 @@ Respond ONLY with valid raw JSON. Do not include markdown code block formatting 
       god,
       godHi: clip(parsedResult.godHi, 60),
       type,
+      // Full text is kept in KV either way; /api/bhajans only publishes the opening lines of "partial" songs.
+      lyrics: parsedResult.lyricsRights === 'traditional' ? 'full' : 'partial',
+      yt: '',
       hindi,
       roman,
       desc: clip(parsedResult.desc, 300),
@@ -253,8 +263,6 @@ Respond ONLY with valid raw JSON. Do not include markdown code block formatting 
       community: true,
       submittedAt: new Date().toISOString()
     };
-    const yt = cleanYoutubeUrl(youtubeUrl);
-    if (yt) newEntry.youtubeUrl = yt;
     if (name) newEntry.contributorName = name;
     if (location) newEntry.contributorLocation = location;
 
@@ -277,9 +285,15 @@ Respond ONLY with valid raw JSON. Do not include markdown code block formatting 
       }), { status: 200, headers: corsHeaders });
     }
 
-    // Permanent song number: the next after the highest in use. The original data.js collection is
-    // numbered 1-65 in app.js; older submissions saved before numbers existed are numbered first, in
-    // submission order, exactly as app.js already displays them.
+    newEntry.yt = await findYoutubeVideo(context, newEntry);
+    // Copyrighted songs also get an official lyrics video if one exists (words shown on screen).
+    if (newEntry.lyrics === 'partial') {
+      const words = await findYoutubeVideo(context, newEntry, { lyricsVideo: true });
+      if (words && words !== newEntry.yt) newEntry.ytLyrics = words;
+    }
+
+    // Permanent song number: the next after the highest in use (data.js holds 1-98; KV still holds
+    // the entries that were moved into data.js, so their numbers are never reused either).
     let topNumber = Math.max(LAST_BUILTIN_NUMBER, ...submissions.map(s => Number.isInteger(s.no) ? s.no : 0));
     submissions.filter(s => !Number.isInteger(s.no)).sort((a, b) => a.id - b.id).forEach(s => { s.no = ++topNumber; });
     newEntry.no = ++topNumber;
@@ -315,7 +329,7 @@ export async function onRequestOptions() {
 
 const ALLOWED_DEITIES = ["Lord Krishna", "Lord Shiva", "Durga Maa", "Lord Rama", "Lord Hanuman", "Lord Ganesha", "Sai Baba", "Saraswati Maa", "Lakshmi Maa", "Santoshi Maa", "Lord Vishnu", "Surya Dev", "Khatu Shyam Ji", "Guru & Family", "Multiple Deities"];
 const ALLOWED_TYPES = ["Bhajan", "Aarti", "Chanting", "Mantra", "Chalisa", "Sundarkand"];
-const LAST_BUILTIN_NUMBER = 65; // highest permanent number in app.js fixedNumbers (original collection)
+const LAST_BUILTIN_NUMBER = 98; // highest permanent number in data.js
 
 // Same slug rule as app.js, so duplicate checks match the site's URLs.
 function titleSlug(title) {
@@ -325,18 +339,22 @@ function titleSlug(title) {
 // ---- Duplicate detection -------------------------------------------------
 // Titles are compared exactly (after normalising); lyrics are compared by character-trigram
 // similarity of their opening ~400 letters, so respellings, reformatting and partial copies match.
-// Calibrated on data.js: distinct songs score at most ~0.65, re-submissions 0.85+.
-const DUP_DICE = 0.8;        // overall similarity of the two openings
+const DUP_DICE = 0.7;        // overall similarity of the two openings
 const DUP_CONTAIN = 0.9;     // share of a shorter (partial) submission found in an existing song
-const DUP_MIN_GRAMS = 60;    // containment is only trusted for texts at least this long
+const DUP_MIN_GRAMS = 40;    // containment is only trusted for texts at least this long (a 4-line opening is ~55)
 
+// Spelling variants of the same words are folded together before comparing: aa/a, ee/i, oo/u,
+// w/v, y/i, kh/k (aspirated letters), "ankhiyon"/"akhiyon"; in Hindi, chandrabindu/anusvara,
+// nukta, halant and long/short i and u. (Calibrated 2026-10-04 on all songs: distinct songs score
+// at most ~0.5, the three re-submissions that slipped through at 0.8 score 0.72-0.96.)
 function normRoman(s) {
   return String(s || '').slice(0, 600).normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
-    .replace(/[^a-z]/g, '').replace(/w/g, 'v').replace(/(.)\1+/g, '$1');
+    .replace(/[^a-z]/g, '').replace(/([bcdgjkpt])h/g, '$1').replace(/w/g, 'v').replace(/y/g, 'i')
+    .replace(/ee/g, 'i').replace(/oo/g, 'u').replace(/n(?=[kgcjtdpb])/g, '').replace(/(.)\1+/g, '$1');
 }
 function normHindi(s) {
-  return String(s || '').slice(0, 600).replace(/ँ/g, 'ं').replace(/़/g, '')
-    .replace(/[^ऀ-ॣ०-ॿ]/g, '');
+  return String(s || '').slice(0, 600).replace(/[ँं़्]/g, '')
+    .replace(/ी/g, 'ि').replace(/ू/g, 'ु').replace(/[^ऀ-ॣ०-ॿ]/g, '');
 }
 function trigrams(s, max = 400) {
   const t = s.slice(0, max), g = new Set();
@@ -351,10 +369,17 @@ function similar(a, b) {
   for (const x of small) if (large.has(x)) shared++;
   return 2 * shared / (a.size + b.size) >= DUP_DICE || (small.size >= DUP_MIN_GRAMS && shared / small.size >= DUP_CONTAIN);
 }
+// Title compared by sound, so "Meri Akhion Ke Saamne Hi Rehna" = "Meri Ankhiyon Ke Samne Hi Rehna".
+// Needed because data.js keeps only the opening lines of copyrighted songs to compare lyrics with.
+function titleSound(title) {
+  const words = latinWords(title);
+  return words.length >= 3 ? words.sort().join(' ') : '';
+}
 function songKeys(song) {
   return {
     title: song.titleEn || '',
     slug: titleSlug(song.titleEn || ''),
+    sound: titleSound(song.titleEn),
     hiTitle: normHindi(song.titleHi),
     hindi: trigrams(normHindi(song.hindi)),
     roman: trigrams(normRoman(song.roman))
@@ -365,8 +390,9 @@ function songKeys(song) {
 // { titles: false } compares lyrics only (used on raw pasted text, which has no title yet).
 function findDuplicate(entry, builtIn, submissions, { titles = true } = {}) {
   const k = songKeys(entry);
-  const titleMatch = o => titles && (o.slug === k.slug || (k.hiTitle.length >= 4 && o.hiTitle === k.hiTitle));
+  const titleMatch = o => titles && (o.slug === k.slug || (k.sound && o.sound === k.sound) || (k.hiTitle.length >= 4 && o.hiTitle === k.hiTitle));
   if (titles && builtIn.slugs.has(k.slug)) return entry.titleEn;
+  if (titles && k.sound && builtIn.sounds.has(k.sound)) return builtIn.sounds.get(k.sound);
   if (titles && k.hiTitle.length >= 4 && builtIn.hiTitles.has(k.hiTitle)) return entry.titleHi || true;
   for (const doc of builtIn.docs) {
     if (similar(doc.kind === 'hindi' ? k.hindi : k.roman, doc.grams)) return doc.title || true;
@@ -391,7 +417,7 @@ function loadBuiltInIndex(context) {
     builtInIndexPromise = buildBuiltInIndex(context).catch(e => {
       console.error('Could not read data.js for duplicate check:', e);
       builtInIndexPromise = null;
-      return { slugs: new Set(), hiTitles: new Set(), docs: [] };
+      return { slugs: new Set(), sounds: new Map(), hiTitles: new Set(), docs: [] };
     });
   }
   return builtInIndexPromise;
@@ -400,7 +426,7 @@ async function buildBuiltInIndex(context) {
   const res = await context.env.ASSETS.fetch(new URL('/data.js', context.request.url));
   if (!res.ok) throw new Error(`data.js returned ${res.status}`);
   const text = await res.text();
-  const index = { slugs: new Set(), hiTitles: new Set(), docs: [] };
+  const index = { slugs: new Set(), sounds: new Map(), hiTitles: new Set(), docs: [] };
   // data.js mixes quoting styles and adds Romanized text in separate update blocks, so scan every
   // titleEn / titleHi / hindi / roman string literal instead of trying to pair fields per song.
   const re = /["']?(titleEn|titleHi|hindi|roman)["']?\s*:\s*(['"`])/g;
@@ -419,7 +445,7 @@ async function buildBuiltInIndex(context) {
     const field = m[1];
     const value = text.slice(start, field.startsWith('title') ? end : Math.min(end, start + 800))
       .replace(/\\n/g, '\n').replace(/\\(.)/g, '$1');
-    if (field === 'titleEn') { lastTitle = value; index.slugs.add(titleSlug(value)); }
+    if (field === 'titleEn') { lastTitle = value; index.slugs.add(titleSlug(value)); if (titleSound(value)) index.sounds.set(titleSound(value), value); }
     else if (field === 'titleHi') { const h = normHindi(value); if (h.length >= 4) index.hiTitles.add(h); }
     else if (!value.includes('उपलब्ध नहीं')) { // skip the "Hindi not available" placeholders (IDs 102-105)
       const grams = trigrams(field === 'hindi' ? normHindi(value) : normRoman(value));
@@ -463,12 +489,75 @@ function spamProblem(everything) {
   return null;
 }
 
-function cleanYoutubeUrl(value) {
-  if (typeof value !== 'string' || !value.trim()) return null;
+// ---- YouTube video for the reader ------------------------------------------
+// Picks the best embeddable video for a new song with the YouTube Data API (Pages secret
+// YOUTUBE_API_KEY; one search costs 100 of the free 10,000 daily units, so about 99 songs a day).
+// Same ranking as the one used for the original collection: the title must match, then views,
+// official channels and normal song length win. Any problem simply means no video.
+const YT_OFFICIAL = /^(T-Series Bhakti Sagar|T-Series|Shemaroo Bhakti|Saregama Bhakti|Rajshri Soul|Tips Bhakti Prem|Tips Official|Times Music Spiritual|Times Music|Ambey Bhakti|Yuki Bhakti|Sonotek Bhakti|Zee Music Devotional)$/;
+const YT_BAD = /jukebox|non ?stop|top ?\d+|collection|karaoke|instrumental|\bdj\b|remix|lo-?fi|status|#shorts|reels?\b|mashup|ringtone|katha|kahani|story/i;
+const YT_OTHER_FORM = /chalisa|चालीसा|stotra|स्तोत्र|stuti|स्तुति|ashtak|अष्टक|amritwani|अमृतवाणी/i;
+const YT_STOP = new Set(['ke', 'ki', 'ka', 'ko', 'hai', 'he', 'hain', 'me', 'mein', 'se', 'na', 'ne', 'to', 'ji', 'shri', 'shree', 'sri', 'o', 'tu', 'the', 'bhajan', 'aarti', 'arti']);
+
+function phoneticWord(word) {
+  return word.toLowerCase().replace(/[^a-z]/g, '').replace(/([bcdgjkpst])h/g, '$1').replace(/w/g, 'v')
+    .replace(/y/g, 'i').replace(/n(?=[kgcjtdpb])/g, '').replace(/([aeiou])\1+/g, '$1').replace(/h$/, '');
+}
+const latinWords = s => String(s || '').split(/[^A-Za-z]+/).filter(w => w && !YT_STOP.has(w.toLowerCase())).map(phoneticWord).filter(w => w.length > 1);
+const hindiWords = s => String(s || '').split(/[^ऀ-ॿ]+/).map(w => w.replace(/[ँं़्]/g, '')).filter(w => w.length > 1);
+function wordOverlap(songWords, videoWords) {
+  if (!songWords.length) return 0;
+  const v = new Set(videoWords);
+  return songWords.filter(t => v.has(t) || [...v].some(x => x.length > 3 && t.length > 3 && (x.startsWith(t) || t.startsWith(x)))).length / songWords.length;
+}
+function isoSeconds(iso) {
+  const m = /^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(iso || '');
+  return m ? (+m[1] || 0) * 86400 + (+m[2] || 0) * 3600 + (+m[3] || 0) * 60 + (+m[4] || 0) : 0;
+}
+
+// With { lyricsVideo: true } it looks for a lyrics video instead (title must say lyrics/lyrical, and
+// the labels' own channels are strongly preferred, since they own the words).
+const YT_LYRICS = /lyric|लिरिक्स/i;
+async function findYoutubeVideo(context, song, { lyricsVideo = false } = {}) {
+  const key = context.env?.YOUTUBE_API_KEY;
+  if (!key) return '';
   try {
-    const url = new URL(value.trim());
-    const host = url.hostname.replace(/^(www\.|m\.|music\.)/, '');
-    if (url.protocol === 'https:' && (host === 'youtube.com' || host === 'youtu.be')) return url.href.slice(0, 300);
-  } catch (e) {}
-  return null;
+    const api = async (endpoint, params) => {
+      const url = new URL('https://www.googleapis.com/youtube/v3/' + endpoint);
+      for (const [k, v] of Object.entries({ ...params, key })) url.searchParams.set(k, v);
+      const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+      if (!res.ok) throw new Error(`${endpoint} returned ${res.status}`);
+      return res.json();
+    };
+    const lower = song.titleEn.toLowerCase();
+    const q = lyricsVideo ? song.titleEn + ' lyrics'
+      : song.titleEn + (song.type === 'Aarti' ? (lower.includes('aarti') ? '' : ' aarti') : song.type === 'Bhajan' ? ' bhajan' : '');
+    const found = await api('search', { part: 'snippet', q, type: 'video', videoEmbeddable: 'true', maxResults: '10', regionCode: 'IN', relevanceLanguage: 'hi' });
+    const ids = (found.items || []).map(i => i.id?.videoId).filter(Boolean);
+    if (!ids.length) return '';
+    const details = await api('videos', { part: 'snippet,contentDetails,statistics,status', id: ids.join(',') });
+    const titleWords = latinWords(song.titleEn), titleHindi = hindiWords(song.titleHi);
+    const squash = words => words.join('');
+    let best = null;
+    for (const v of details.items || []) {
+      const title = v.snippet?.title || '', channel = v.snippet?.channelTitle || '';
+      const joined = squash(titleWords).length > 8 && squash(latinWords(title)).includes(squash(titleWords)) ? 1 : 0;
+      const match = Math.max(joined, wordOverlap(titleWords, latinWords(title)), wordOverlap(titleHindi, hindiWords(title)));
+      if (match < 0.6 || v.status?.embeddable === false || v.status?.privacyStatus !== 'public' || v.status?.madeForKids) continue;
+      if (lyricsVideo && !YT_LYRICS.test(title)) continue;
+      const seconds = isoSeconds(v.contentDetails?.duration);
+      let score = 60 * match + 6 * Math.log10(Number(v.statistics?.viewCount || 0) + 1);
+      if (YT_OFFICIAL.test(channel)) score += lyricsVideo ? 30 : 12;
+      if (/ - Topic$/.test(channel)) score += 8;
+      if (YT_BAD.test(title)) score -= 30;
+      if (YT_OTHER_FORM.test(title) && !YT_OTHER_FORM.test(song.titleEn + ' ' + song.titleHi)) score -= 40;
+      if (seconds < 90) score -= 40;
+      if (seconds > 1500) score -= 25;
+      if (!best || score > best.score) best = { id: v.id, score };
+    }
+    return best && /^[\w-]{11}$/.test(best.id) ? best.id : '';
+  } catch (e) {
+    console.error('YouTube search failed:', e.message);
+    return '';
+  }
 }
