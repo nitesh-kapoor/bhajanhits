@@ -1,6 +1,6 @@
-# Project context: Bhakti Bhajan Sangrah (bhajanhits.com)
+# Project context: BhajanHits (bhajanhits.com), formerly "Bhakti Bhajan Sangrah"
 
-Static devotional-song website (Hindi lyrics + Romanized Hindi) with AI-checked community submissions. `Bhakti-Bhajan-Sangrah-AI-Handoff.md` is the older Codex handoff: useful background on the original design, but its hosting, numbering and cache notes are out of date. This file is current.
+Site name (owner, 2026-10-05): "BhajanHits" with the tagline "A devotional songs collection" (header, title, manifest, share text). Static devotional-song website (Hindi lyrics + Romanized Hindi) with AI-checked community submissions. `Bhakti-Bhajan-Sangrah-AI-Handoff.md` is the older Codex handoff: useful background on the original design, but its hosting, numbering and cache notes are out of date. This file is current.
 
 ## Owner and working style
 - Owner: Nitesh Kapoor (Windows paths say "Sarthak"; that is not the owner). New to git, GitHub and Cloudflare: give exact PowerShell commands and click-by-click dashboard steps, one at a time, and ask for screenshots.
