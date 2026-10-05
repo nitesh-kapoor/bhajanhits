@@ -138,7 +138,7 @@ function showItem(x){
  $('#description').textContent=x.desc||'';$('#source').textContent=x.source||'';
  renderPlayer(x);
  const partial=x.lyrics==='partial';$('#partialNote').hidden=!partial;
- if(partial)$('#fullLyricsLink').href='https://www.google.com/search?q='+encodeURIComponent(x.titleEn+(/aarti/i.test(x.titleEn)?'':x.type==='Aarti'?' aarti':' bhajan')+' lyrics poster')+'&udm=2';
+ if(partial)$('#fullLyricsLink').href='https://www.google.com/search?q='+encodeURIComponent(x.titleEn+' lyrics poster')+'&udm=2';
  document.title=x.titleEn+' | Bhakti Bhajan Sangrah';renderLyrics();renderFavorite();
  if(!sequence.includes(x.id))sequence=items.map(x=>x.id);
  const position=sequence.indexOf(x.id);$('#previous').disabled=position<=0;$('#next').disabled=position>=sequence.length-1;
