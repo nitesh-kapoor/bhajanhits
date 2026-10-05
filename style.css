@@ -145,3 +145,34 @@
 @media(max-width:420px){.brand>span:last-child{font-size:15px;line-height:1.2}.header-submit{padding:8px 11px}.header-actions{gap:4px}.icon-button{min-width:40px;padding:6px 8px}}
 @media(max-width:420px){.type-tabs button{padding:8px 6px;font-size:13px}.type-tabs .tab-count{display:none}}
 @media(min-width:768px){.home-extras{align-items:start}}
+/* Reader: embedded YouTube player (thumbnail until tapped) and the note for copyrighted songs */
+.reader-body{margin-top:14px}
+.player{max-width:560px;margin:0 auto 4px}
+.player-start,.player iframe{display:block;position:relative;width:100%;aspect-ratio:16/9;border:0;border-radius:12px;overflow:hidden;background:#1d1a16}
+.player-start{padding:0;min-height:0}
+.player-start img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.88}
+.player-start .play-icon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:46px;display:grid;place-items:center;border-radius:14px;background:#d42a1f;color:white;font-size:22px;box-shadow:0 2px 10px #0006}
+.player-start .player-label{position:absolute;left:0;right:0;bottom:0;padding:22px 12px 10px;background:linear-gradient(transparent,#000a);color:white;font-size:13px;font-weight:600;text-align:left}
+.player-start:hover .play-icon,.player-start:focus-visible .play-icon{background:#b31f16}
+.player-link{display:inline-block;margin:6px 2px 0;font-size:12px;color:var(--muted)}
+.partial-note{margin:0 0 24px;padding:14px 16px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;background:var(--paper);font-size:13px;line-height:1.6;color:var(--muted)}
+.partial-note p{margin:0 0 10px}
+.full-lyrics-link{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border:1px solid var(--accent);border-radius:12px;padding:10px 14px;background:var(--accent);color:white;font-weight:600;font-size:14px;text-decoration:none}
+.full-lyrics-link small{font-weight:400;opacity:.85}
+footer small a{color:var(--muted)}
+/* Wide screens: lyrics and video side by side; the video stays in view while the lyrics scroll */
+@media(min-width:1024px){
+ #reader:has(#player:not([hidden])){max-width:1100px}
+ .reader-body:has(#player:not([hidden])){display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:32px;align-items:start}
+ .reader-body #player:not([hidden]){grid-column:2;grid-row:1;position:sticky;top:76px;width:100%;margin:24px 0 0}
+ .reader-body .lyrics-col{grid-column:1;grid-row:1}
+}
+/* "Report a problem" dialog (song page) */
+#reportDialog{width:min(480px,94vw);max-height:90dvh;overflow-y:auto;padding:20px;border-radius:18px}
+#reportDialog label{display:block;margin:0 0 14px}
+#reportDialog select,#reportDialog input{display:block;width:100%;min-height:44px;margin:0;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:15px;background:var(--paper);color:var(--ink)}
+#reportDialog textarea{display:block;width:100%;min-height:110px;border:1px solid var(--line);border-radius:12px;padding:12px;font-family:inherit;font-size:15px;line-height:1.6;background:var(--paper);color:var(--ink);resize:vertical}
+.report-song{margin:0 0 14px;font-weight:600;color:var(--accent)}
+.report-done p{font-size:15px;line-height:1.6;margin:6px 0 16px}
+.trap{position:absolute!important;left:-9999px;width:1px;height:1px;overflow:hidden}
+.singing .report-button{display:none}

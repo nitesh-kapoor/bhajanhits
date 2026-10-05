@@ -11,8 +11,8 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="style.css?v=23">
-<script defer src="data.js?v=23"></script><script defer src="app.js?v=23"></script>
+<link rel="stylesheet" href="style.css?v=24">
+<script defer src="data.js?v=24"></script><script defer src="app.js?v=24"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -25,22 +25,36 @@
 <p id="activeFilters" class="active-filters" hidden></p>
 <section id="homeExtras" class="home-extras" aria-label="Featured bhajans" hidden><div id="todayCard" class="today-card"></div><div id="newlyAdded" class="newly-added" hidden><h2 class="mini-heading">Newly added</h2><ol id="newlyList" class="newly-list"></ol></div></section>
 <section id="collection"><div class="section-heading"><h2 id="collectionTitle">The Collection</h2><div class="heading-actions"><button id="reset" class="text-button" hidden>Clear filters</button></div></div><p id="resultCount" class="muted" role="status"></p><ol id="cards" class="cards" aria-label="Numbered bhajan collection"></ol></section>
-<footer><div class="creator-credit"><span class="creator-label">Created with devotion by</span><strong>Nitesh Kapoor</strong><span class="creator-note">A collection to bring us together in prayer.</span></div><small>Hindi &amp; Romanized Hindi • For our community</small></footer>
+<footer><div class="creator-credit"><span class="creator-label">Created with devotion by</span><strong>Nitesh Kapoor</strong><span class="creator-note">A collection to bring us together in prayer.</span></div><small>Hindi &amp; Romanized Hindi • For our community</small><small><a href="copyright.html">Copyright &amp; report a problem</a></small></footer>
 </div>
 <article id="reader" hidden aria-labelledby="readerTitle">
 <div class="reader-top"><button id="back">← Back</button><button id="singing" aria-pressed="false">Singing Mode</button></div>
 <header class="reader-heading"><p id="readerMeta" class="eyebrow"></p><h1 id="readerTitle" tabindex="-1"></h1><p id="readerHindi" lang="hi"></p></header>
 <div class="reader-controls"><div class="language-toggle" role="group" aria-label="Lyrics language"><button data-lang="hindi" lang="hi">हिंदी</button><button data-lang="roman">English</button></div><div class="font-controls" role="group" aria-label="Lyrics font size"><button id="smaller" aria-label="Decrease lyrics font size">A−</button><button id="larger" aria-label="Increase lyrics font size">A+</button></div></div>
 <p id="languageNote" class="muted"></p>
-<div class="reader-actions"><button id="readerFavorite">♡ Favorite</button><button id="share">Share ↗</button></div>
+<div class="reader-actions"><button id="readerFavorite">♡ Favorite</button><button id="share">Share ↗</button><button id="report" class="report-button">⚑ Report</button></div>
 <p id="wakeStatus" class="muted" role="status" hidden></p>
-<div id="lyricsText" class="lyrics-text"></div>
-<a id="youtubeLink" class="youtube-link" target="_blank" rel="noopener noreferrer" hidden>▶ Listen on YouTube <small>(tune reference)</small></a><details class="source-details"><summary>About this bhajan</summary><p id="description"></p><p id="source"></p></details>
+<div class="reader-body"><div id="player" class="player" hidden></div><div class="lyrics-col"><div id="lyricsText" class="lyrics-text"></div>
+<div id="partialNote" class="partial-note" hidden><p>Only the opening lines are shown here. This song's lyrics belong to its writer and music label, so we do not publish them in full. <a href="copyright.html">Why?</a></p><a id="fullLyricsLink" class="full-lyrics-link" target="_blank" rel="noopener noreferrer">🔎 View full lyrics <small>(Google Images)</small> ↗</a></div></div></div>
+<details class="source-details"><summary>About this bhajan</summary><p id="description"></p><p id="source"></p></details>
 <nav class="reader-pagination" aria-label="Bhajan navigation"><button id="previous">← Previous Bhajan</button><button id="next">Next Bhajan →</button></nav>
 </article>
 </main>
 <div id="notice" class="notice" role="status" hidden></div>
 <dialog id="shareDialog"><h2>Share this bhajan</h2><label for="shareLink">Copy this link</label><input id="shareLink" readonly><button id="closeShare">Done</button></dialog>
+<dialog id="reportDialog" aria-labelledby="reportTitle">
+<div class="submit-modal-header"><h2 id="reportTitle">⚑ Report a problem</h2><button id="closeReport" aria-label="Close report dialog">✕</button></div>
+<form id="reportForm" onsubmit="return false;">
+<p id="reportSong" class="report-song"></p>
+<label for="reportReason"><span class="input-label">What is wrong?</span><select id="reportReason" required><option value="">Choose one…</option><option>Wrong or misspelled lyrics</option><option>Wrong video</option><option>Copyright concern</option><option>Inappropriate content</option><option>Other</option></select></label>
+<label for="reportComment"><span class="input-label">Please describe the problem</span><textarea id="reportComment" rows="4" maxlength="1000" placeholder="e.g. Line 3 should be &quot;…&quot;, or the video is a different song"></textarea></label>
+<label for="reportEmail"><span class="input-label">Your email <small>(optional, only if you would like a reply; never shown publicly)</small></span><input type="email" id="reportEmail" maxlength="120" autocomplete="email" placeholder="you@example.com"></label>
+<label class="trap" aria-hidden="true">Website <input id="reportWebsite" tabindex="-1" autocomplete="off"></label>
+<div id="reportNotice" class="submit-notice" role="alert" hidden></div>
+<button type="button" id="reportSend" class="primary-action-btn">Send report</button>
+</form>
+<div id="reportDone" class="report-done" hidden><p>🙏 Thank you. Your report has been sent and we will look at it soon.</p><button type="button" id="reportClose2" class="primary-action-btn">Done</button></div>
+</dialog>
 <dialog id="submitDialog" aria-labelledby="submitTitle">
 <div class="submit-modal-header"><h2 id="submitTitle"><span class="brand-mark" aria-hidden="true">ॐ</span> Submit a Bhajan <small>भजन जोड़ें</small></h2><button id="closeSubmit" aria-label="Close submission dialog">✕</button></div>
 <form id="submitForm" onsubmit="return false;">
@@ -48,7 +62,8 @@
 <div class="submit-mode-toggle" role="tablist" aria-label="Submission type"><button type="button" id="tabPhoto" class="mode-tab active" role="tab" aria-selected="true">📷 Photo / Screenshot</button><button type="button" id="tabText" class="mode-tab" role="tab" aria-selected="false">✍️ Paste Lyrics</button></div>
 <div id="photoPanel" class="submit-panel" role="tabpanel"><label for="photoFile" class="file-dropzone" id="fileDropzone"><span class="dropzone-icon" aria-hidden="true">📸</span><span class="dropzone-title">Tap to choose photo or take picture</span><span class="dropzone-hint">Photos of bhajan books, handwritten lyrics, or WhatsApp screenshots</span><input type="file" id="photoFile" accept="image/*" class="sr-only"></label><div id="previewWrap" class="preview-wrap" hidden><img id="photoPreview" alt="Uploaded lyrics preview"><button type="button" id="removePhoto" class="text-button">✕ Remove photo</button></div></div>
 <div id="textPanel" class="submit-panel" role="tabpanel" hidden><label for="submitLyrics" class="sr-only">Lyrics text</label><textarea id="submitLyrics" rows="6" placeholder="Paste Hindi or Romanized English lyrics here..."></textarea></div>
-<div class="optional-inputs"><label for="youtubeUrl"><span class="input-label">🎵 Rhythm &amp; Tune Reference <small>(Optional YouTube link for tempo/taal)</small></span><input type="url" id="youtubeUrl" placeholder="https://youtu.be/... or https://youtube.com/watch?v=..."></label><div class="contributor-grid"><label for="contributorName"><span class="input-label">Your Name <small>(Optional)</small></span><input type="text" id="contributorName" placeholder="e.g. Sharma Ji"></label><label for="contributorLocation"><span class="input-label">City, Country <small>(Optional)</small></span><input type="text" id="contributorLocation" placeholder="e.g. Delhi, India"></label></div><p class="public-note">Your name and city will be shown with the bhajan.</p></div>
+<p class="public-note">Traditional and folk bhajans are shown in full. For songs from films or music albums, only the opening lines are shown, with a link to the full lyrics. A YouTube video is added automatically.</p>
+<div class="optional-inputs"><div class="contributor-grid"><label for="contributorName"><span class="input-label">Your Name <small>(Optional)</small></span><input type="text" id="contributorName" placeholder="e.g. Sharma Ji"></label><label for="contributorLocation"><span class="input-label">City, Country <small>(Optional)</small></span><input type="text" id="contributorLocation" placeholder="e.g. Delhi, India"></label></div><p class="public-note">Your name and city will be shown with the bhajan.</p></div>
 <div id="submitStatus" class="submit-status" hidden><div class="spinner" aria-hidden="true"></div><p id="submitStatusText">Reading and verifying lyrics with AI...</p></div>
 <div id="submitNotice" class="submit-notice" hidden></div>
 <div class="submit-footer"><button type="button" id="submitActionBtn" class="primary-action-btn">✦ Add Bhajan with Devotion</button></div>
