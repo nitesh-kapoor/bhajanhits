@@ -587,7 +587,7 @@ Aur sankat harne waale ko hanuman kehte hain
 (sankat harne waale ko hanuman kehte hain)
 Duniya rachne waale ko bhagwan kehte hain`},
 
-{id:111,no:13,titleEn:"Ganpati Ki Jai Jaikar",titleHi:"गणपति की जय जयकार",god:"Lord Ganesha",godHi:"गणेश जी",type:"Bhajan",lyrics:"partial",yt:"e2qcwS2lSww",desc:"Counting bhajan (1–20), transcribed from the supplied screenshot. The Hindi line for 9–12 includes two alternatives; the supplied Romanized version includes only “sabse pyaare”.",source:"Your collection • Supplied Ganpati counting-bhajan screenshot",
+{id:111,no:13,titleEn:"Ganpati Ki Jai Jaikar",titleHi:"गणपति की जय जयकार",god:"Lord Ganesha",godHi:"गणेश जी",type:"Bhajan",lyrics:"partial",yt:"sT-1N1iPncs",desc:"Counting bhajan (1–20), transcribed from the supplied screenshot. The Hindi line for 9–12 includes two alternatives; the supplied Romanized version includes only “sabse pyaare”.",source:"Your collection • Supplied Ganpati counting-bhajan screenshot",
 hindi:`1, 2, 3, 4 – गणपति की जय जयकार
 
 5, 6, 7, 8 – गणपति हमारे साथ
