@@ -1329,7 +1329,7 @@ hindi:`मन्दिर सजा के रखना, दीपक जला 
 roman:`Mandir sajaa ke rakhnaa, deepak jalaa ke rakhnaa
 Aayengi meri maiya chunari mangaa ke rakhnaa`},
 
-{id:108,no:36,titleEn:"Mangalwar Tera Hai Shanivar Tera Hai",titleHi:"मंगलवार तेरा है शनिवार तेरा है",god:"Lord Hanuman",godHi:"हनुमान जी",type:"Bhajan",lyrics:"partial",yt:"b9KZ40cDyDA",desc:"A Balaji/Hanuman bhajan from your personal collection.",source:"Your Bhajan Collection • PDF pp. 27–28",
+{id:108,no:36,titleEn:"Mangalwar Tera Hai Shanivar Tera Hai",titleHi:"मंगलवार तेरा है शनिवार तेरा है",god:"Lord Hanuman",godHi:"हनुमान जी",type:"Bhajan",lyrics:"partial",yt:"JsUOJpLL70s",desc:"A Balaji/Hanuman bhajan from your personal collection.",source:"Your Bhajan Collection • PDF pp. 27–28",
 hindi:`मंगलवार तेरा है शनिवार तेरा है,
 बजरंगी संभालो परिवार तेरा है।`,
 roman:`Mangalwar tera hai, Shanivar tera hai,
@@ -1530,7 +1530,7 @@ Nazar lag jaayegi
 Mere baanke bihaaree laal, tu itnaa naa kario shringar
 Nazar lag jaayegi`},
 
-{id:123,no:39,titleEn:"Mere Ghar Ke Aage Sainath",titleHi:"मेरे घर के आगे साईनाथ",god:"Sai Baba",godHi:"",type:"Bhajan",lyrics:"partial",yt:"Nt-5PbCWqyc",desc:"Transcribed from the supplied PDF, preserving its wording and repeated lines. Romanized pronunciation added from the Hindi text.",source:"Your collection • bahajans-lyrcis.pdf, page 10",
+{id:123,no:39,titleEn:"Mere Ghar Ke Aage Sainath",titleHi:"मेरे घर के आगे साईनाथ",god:"Sai Baba",godHi:"",type:"Bhajan",lyrics:"partial",yt:"6660WPcaPtw",desc:"Transcribed from the supplied PDF, preserving its wording and repeated lines. Romanized pronunciation added from the Hindi text.",source:"Your collection • bahajans-lyrcis.pdf, page 10",
 hindi:`मेरे घर के आगे साईनाथ तेरा मन्दिर बन जाए
 जब खिड़की खोलूँ तो तेरा दर्शन हो जाए`,
 roman:`Mere ghar ke aage sainath teraa mandir ban jaaye
@@ -2897,15 +2897,67 @@ De de thoda pyar maiya tera kya ghat jaayega
 Ye baalak bhav tar jaayega
 Chhod tera darbaar..`},
 
-{id:1790659448236,no:76,titleEn:"Bolte Chalo Bolte Chalo Sherawali Ke Jaykaare",titleHi:"बोलते चलो बोलते चलो शेरावाली के जयकारे",god:"Durga Maa",godHi:"माँ दुर्गा",type:"Bhajan",lyrics:"partial",yt:"npnK-EDjQA0",desc:"A joyful devotional bhajan chanting praises and glorious adornments of Maa Sherawali.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-29T05:24:08.236Z",
+{id:1790659448236,no:76,titleEn:"Bolte Chalo Bolte Chalo Sherawali Ke Jaykaare",titleHi:"बोलते चलो बोलते चलो शेरावाली के जयकारे",god:"Durga Maa",godHi:"माँ दुर्गा",type:"Bhajan",lyrics:"full",yt:"npnK-EDjQA0",desc:"A joyful devotional bhajan chanting praises and glorious adornments of Maa Sherawali.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-29T05:24:08.236Z",
 hindi:`बोलते चलो बोलते चलो
 शेरावाली के जयकारे बोलते चलो
 बोलते चलो बोलते चलो
-महारानी के जयकारे बोलते चलो`,
+महारानी के जयकारे बोलते चलो
+शेरावाली के जयकारे बोलते चलो...
+
+ये बिंदिया मां तेरी बिंदिया
+सारे भक्तों की ले गई निंदिया
+जयकारे मां के बोलते चलो
+बोलते चलो बोलते चलो....
+
+ये चोला मां तेरा चोला
+मैंने जयकारा तेरा बोला
+जयकारे मां के बोलते चलो
+बोलते चलो बोलते चलो....
+
+ये कंगना मां तेरा कंगना
+कब आओगी मेरे अंगना
+जयकारे मां के बोलते चलो
+बोलते चलो बोलते चलो....
+
+ये पायल मां तेरी पायल
+मेरे दिल को कर गई घायल
+जयकारे मां के बोलते चलो
+बोलते चलो बोलते चलो....
+
+यह चुनरी मां तेरी चुनरी
+तुझे पूजे दुनिया सारी
+जयकारे मां के बोलते चलो
+बोलते चलो बोलते चलो....`,
 roman:`Bolte chalo bolte chalo
 Sherawali ke jaykaare bolte chalo
 Bolte chalo bolte chalo
-Maharani ke jaykaare bolte chalo`},
+Maharani ke jaykaare bolte chalo
+Sherawali ke jaykaare bolte chalo...
+
+Ye bindiya maa teri bindiya
+Saare bhakton ki le gayi nindiya
+Jaykaare maa ke bolte chalo
+Bolte chalo bolte chalo....
+
+Ye chola maa tera chola
+Maine jaykaara tera bola
+Jaykaare maa ke bolte chalo
+Bolte chalo bolte chalo....
+
+Ye kangana maa tera kangana
+Kab aaogi mere angana
+Jaykaare maa ke bolte chalo
+Bolte chalo bolte chalo....
+
+Ye paayal maa teri paayal
+Mere dil ko kar gayi ghaayal
+Jaykaare maa ke bolte chalo
+Bolte chalo bolte chalo....
+
+Yeh chunari maa teri chunari
+Tujhe pooje duniya saari
+Jaykaare maa ke bolte chalo
+Bolte chalo bolte chalo....`},
 
 {id:1790659481171,no:77,titleEn:"Jaykara Jaykara Sherawali Ka Bolo Jaykara",titleHi:"जयकारा जयकारा शेरावाली का बोलो जयकारा",god:"Durga Maa",godHi:"माँ दुर्गा",type:"Bhajan",lyrics:"full",yt:"onQ5oVUxl4A",desc:"A vibrant Mata bhajan praising Maa Sherawali and celebrating the divine feminine manifesting across sacred forms.",source:"Contributed with devotion",community:true,submittedAt:"2026-09-29T05:24:41.171Z",
 hindi:`जयकारा जयकारा जयकारा
