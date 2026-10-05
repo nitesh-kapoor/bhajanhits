@@ -1,7 +1,7 @@
 {
-  "name": "Bhakti Bhajan Sangrah",
-  "short_name": "Bhakti",
-  "description": "Devotional lyrics in Hindi and Romanized Hindi",
+  "name": "BhajanHits - A devotional songs collection",
+  "short_name": "BhajanHits",
+  "description": "A devotional songs collection: bhajans and aartis with lyrics and videos",
   "id": "./",
   "start_url": "./",
   "scope": "./",

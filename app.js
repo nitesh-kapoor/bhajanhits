@@ -143,7 +143,7 @@ function showItem(x){
  renderPlayer(x);
  const partial=x.lyrics==='partial';$('#partialNote').hidden=!partial;
  if(partial)$('#fullLyricsLink').href='https://www.google.com/search?q='+encodeURIComponent(x.titleEn+' lyrics poster')+'&udm=2';
- document.title=x.titleEn+' | Bhakti Bhajan Sangrah';renderLyrics();renderFavorite();
+ document.title=x.titleEn+' | BhajanHits';renderLyrics();renderFavorite();
  if(!sequence.includes(x.id))sequence=items.map(x=>x.id);
  const position=sequence.indexOf(x.id);$('#previous').disabled=position<=0;$('#next').disabled=position>=sequence.length-1;
  window.scrollTo(0,0);$('#readerTitle').focus({preventScroll:true});
@@ -180,7 +180,7 @@ $('#smaller').onclick=()=>{size=Math.max(18,size-2);store.set('fontSize',size);a
 $('#larger').onclick=()=>{size=Math.min(40,size+2);store.set('fontSize',size);applySize();};
 $('#readerFavorite').onclick=()=>toggleFavorite(current.id);
 function closeReader(){
- setSinging(false);current=null;$('#player').innerHTML='';$('#browse').hidden=false;$('#reader').hidden=true;document.body.classList.remove('reading');document.title='Bhakti Bhajan Sangrah';render();
+ setSinging(false);current=null;$('#player').innerHTML='';$('#browse').hidden=false;$('#reader').hidden=true;document.body.classList.remove('reading');document.title='BhajanHits - A devotional songs collection';render();
  requestAnimationFrame(()=>{window.scrollTo(0,browseScroll);const b=document.querySelector('[data-open="'+lastOpened+'"]');if(b)b.focus({preventScroll:true});});
 }
 $('#back').onclick=()=>{if(history.state?.bbsReader)history.back();else{const url=new URL(location.href);url.searchParams.delete('bhajan');history.replaceState(null,'',url);closeReader();}};
@@ -203,7 +203,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 window.addEventListener('pagehide',releaseWake);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#shareDialog').open&&!$('#submitDialog').open&&!$('#reportDialog').open){if(singing)setSinging(false);else if(current)$('#back').click();}});
 $('#share').onclick=async()=>{
- const data={title:'Song #'+songNumber(current)+' · '+current.titleEn+' | Bhakti Bhajan Sangrah',url:location.href};
+ const data={title:'Song #'+songNumber(current)+' · '+current.titleEn+' | BhajanHits',url:location.href};
  if(navigator.share){try{await navigator.share(data);return;}catch(e){if(e.name==='AbortError')return;}}
  try{await navigator.clipboard.writeText(data.url);notify('Link copied.');}catch{$('#shareLink').value=data.url;$('#shareDialog').showModal();$('#shareLink').select();}
 };
@@ -372,7 +372,7 @@ $('#submitActionBtn')?.addEventListener('click', async () => {
   const steps = [
     '🌸 Reading and verifying lyrics with AI...',
     '✨ Formatting Hindi and English pronunciation...',
-    '📖 Adding to Bhakti Bhajan Sangrah...'
+    '📖 Adding to BhajanHits...'
   ];
   statusText.textContent = steps[0];
   const stepTimer = setInterval(() => {
